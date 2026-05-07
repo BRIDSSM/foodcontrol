@@ -1,15 +1,12 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as Haptics from 'expo-haptics';
 import { useCallback, useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Linking, View } from 'react-native';
 
+import { Button } from '@/components/ui/button';
+import { Text } from '@/components/ui/text';
 import { ResultCard } from '@/components/scanner/result-card';
-import {
-  SCANNER_ACCENT,
-  SCANNER_BG,
-  SCANNER_TEXT,
-  SCANNER_TEXT_MUTED,
-} from '@/components/scanner/scanner-theme';
+import { SCANNER_BG, SCANNER_TEXT, SCANNER_TEXT_MUTED } from '@/components/scanner/scanner-theme';
 import { ViewportOverlay } from '@/components/scanner/viewport-overlay';
 import { useProductLookup } from '@/hooks/use-product-lookup';
 import type { ScannedBarcode } from '@/types/cosmos';
@@ -56,35 +53,44 @@ export default function ScannerScreen() {
 
   if (!permission) {
     return (
-      <View style={styles.centered}>
-        <Text style={styles.infoText}>Verificando permissões...</Text>
+      <View className="flex-1 items-center justify-center" style={{ backgroundColor: SCANNER_BG }}>
+        <Text className="text-sm" style={{ color: SCANNER_TEXT_MUTED }}>
+          Verificando permissões...
+        </Text>
       </View>
     );
   }
 
   if (!permission.granted) {
+    const canAsk = permission.canAskAgain;
     return (
-      <View style={styles.centered}>
-        <Text style={styles.permissionTitle}>Câmera necessária</Text>
-        <Text style={styles.permissionBody}>
-          Precisamos de acesso à câmera para escanear códigos de barras.
+      <View
+        className="flex-1 items-center justify-center gap-4 px-8"
+        style={{ backgroundColor: SCANNER_BG }}
+      >
+        <Text variant="h3" className="text-center" style={{ color: SCANNER_TEXT }}>
+          Câmera necessária
         </Text>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Conceder permissão de câmera"
-          style={({ pressed }) => [styles.btn, pressed && styles.btnPressed]}
-          onPress={requestPermission}
+        <Text className="text-center text-sm leading-6" style={{ color: SCANNER_TEXT_MUTED }}>
+          {canAsk
+            ? 'Precisamos de acesso à câmera para escanear códigos de barras.'
+            : 'O acesso à câmera foi negado. Habilite a permissão nas configurações do dispositivo.'}
+        </Text>
+        <Button
+          className="w-full"
+          accessibilityLabel={canAsk ? 'Conceder permissão de câmera' : 'Abrir configurações'}
+          onPress={canAsk ? requestPermission : () => Linking.openSettings()}
         >
-          <Text style={styles.btnText}>Conceder permissão</Text>
-        </Pressable>
+          <Text>{canAsk ? 'Conceder permissão' : 'Abrir configurações'}</Text>
+        </Button>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1" style={{ backgroundColor: SCANNER_BG }}>
       <CameraView
-        style={StyleSheet.absoluteFill}
+        style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }}
         facing="back"
         onBarcodeScanned={scanned ? undefined : handleBarcodeScanned}
         barcodeScannerSettings={{ barcodeTypes: [...BARCODE_TYPES] }}
@@ -92,9 +98,19 @@ export default function ScannerScreen() {
 
       <ViewportOverlay animating={!scanned} />
 
-      <View style={styles.header} pointerEvents="none">
-        <Text style={styles.headerTitle}>Scanner</Text>
-        <Text style={styles.headerSub}>Aponte para um código de barras ou QR code</Text>
+      <View
+        className="absolute left-0 right-0 top-[60px] items-center gap-1.5"
+        pointerEvents="none"
+      >
+        <Text
+          className="text-[26px] font-extrabold uppercase"
+          style={{ color: SCANNER_TEXT, letterSpacing: 2 }}
+        >
+          Scanner
+        </Text>
+        <Text className="text-[13px]" style={{ color: SCANNER_TEXT_MUTED }}>
+          Aponte para um código de barras ou QR code
+        </Text>
       </View>
 
       {scanned ? (
@@ -103,36 +119,3 @@ export default function ScannerScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: SCANNER_BG },
-  centered: {
-    flex: 1,
-    backgroundColor: '#0D0D0D',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 32,
-    gap: 16,
-  },
-  permissionTitle: { color: SCANNER_TEXT, fontSize: 22, fontWeight: '700', textAlign: 'center' },
-  permissionBody: { color: '#AAA', fontSize: 14, textAlign: 'center', lineHeight: 22 },
-  infoText: { color: '#AAA', fontSize: 14 },
-  header: { position: 'absolute', top: 60, left: 0, right: 0, alignItems: 'center', gap: 6 },
-  headerTitle: {
-    color: SCANNER_TEXT,
-    fontSize: 26,
-    fontWeight: '800',
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-  },
-  headerSub: { color: SCANNER_TEXT_MUTED, fontSize: 13 },
-  btn: {
-    backgroundColor: SCANNER_ACCENT,
-    borderRadius: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    alignItems: 'center',
-  },
-  btnPressed: { opacity: 0.8 },
-  btnText: { color: '#0D0D0D', fontSize: 14, fontWeight: '700', letterSpacing: 0.5 },
-});
