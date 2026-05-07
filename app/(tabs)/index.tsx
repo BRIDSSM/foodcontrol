@@ -1,23 +1,12 @@
-import { StyleSheet } from 'react-native';
+import { View } from 'react-native';
 
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
+import { Text } from '@/components/ui/text';
 
 export default function HomeScreen() {
   return (
-    <ThemedView style={styles.container}>
-      <ThemedText type="title">FoodControl</ThemedText>
-      <ThemedText>Edite app/(tabs)/index.tsx para alterar esta tela.</ThemedText>
-    </ThemedView>
+    <View className="flex-1 items-center justify-center gap-3 bg-background p-4">
+      <Text variant="h1">FoodControl</Text>
+      <Text variant="muted">Edite app/(tabs)/index.tsx para alterar esta tela.</Text>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 12,
-  },
-});

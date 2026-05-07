@@ -1,58 +1,47 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet } from 'react-native';
+import { View } from 'react-native';
 import { Link, router, useLocalSearchParams } from 'expo-router';
 
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
+import { Button } from '@/components/ui/button';
+import { Text } from '@/components/ui/text';
 
 /**
- * {{COMPONENT_NAME}} — gerado pelo script `npm run new:screen`.
+ * {{COMPONENT_NAME}} — gerado por `npm run new:screen`.
  *
- * Padrões mostrados aqui:
- *  1. Estado local com `useState` (caso simples).
- *  2. Leitura de params da rota com `useLocalSearchParams`.
- *  3. Navegação declarativa com `<Link>` e imperativa com `router.push`.
+ * Padrões mostrados:
+ *  1. `useState` (estado local).
+ *  2. `useLocalSearchParams` (params da rota).
+ *  3. `<Link>` (declarativo) e `router.push` (imperativo).
+ *  4. Componentes do design system (`Button`, `Text`) consumindo tokens
+ *     definidos em `global.css`. Cores/spacing via classes Tailwind.
  *
  * Apague os exemplos que não usar.
  */
 export default function {{COMPONENT_NAME}}() {
   const [count, setCount] = useState(0);
-
   const params = useLocalSearchParams<{ id?: string }>();
 
   return (
-    <ThemedView style={styles.container}>
-      <ThemedText type="title">{{TITLE}}</ThemedText>
+    <View className="flex-1 gap-3 bg-background p-4">
+      <Text variant="h1">{{TITLE}}</Text>
 
-      {params.id ? <ThemedText>Param id: {params.id}</ThemedText> : null}
+      {params.id ? <Text variant="muted">Param id: {params.id}</Text> : null}
 
-      <ThemedText>Count: {count}</ThemedText>
+      <Text>Count: {count}</Text>
 
-      <Pressable onPress={() => setCount((c) => c + 1)} style={styles.button}>
-        <ThemedText>Increment</ThemedText>
-      </Pressable>
+      <Button onPress={() => setCount((c) => c + 1)}>
+        <Text>Increment</Text>
+      </Button>
 
-      <Link href="/" style={styles.link}>
-        <ThemedText type="link">Go home (Link)</ThemedText>
+      <Link href="/" asChild>
+        <Button variant="outline">
+          <Text>Go home (Link)</Text>
+        </Button>
       </Link>
 
-      <Pressable onPress={() => router.push('/')} style={styles.button}>
-        <ThemedText>Go home (router.push)</ThemedText>
-      </Pressable>
-    </ThemedView>
+      <Button variant="ghost" onPress={() => router.push('/')}>
+        <Text>Go home (router.push)</Text>
+      </Button>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    gap: 12,
-  },
-  button: {
-    paddingVertical: 8,
-  },
-  link: {
-    paddingVertical: 8,
-  },
-});
