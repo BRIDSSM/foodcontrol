@@ -13,6 +13,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
+    "new:screen": "tsx ./scripts/new-screen.ts",
     "prepare": "husky"
   },
   "dependencies": {
@@ -61,6 +62,7 @@
     "husky": "^9.1.7",
     "lint-staged": "^17.0.2",
     "prettier": "3.8.3",
+    "tsx": "^4.21.0",
     "typescript": "~5.9.2"
   },
   "private": true

@@ -1,0 +1,58 @@
+import { useState } from 'react';
+import { Pressable, StyleSheet } from 'react-native';
+import { Link, router, useLocalSearchParams } from 'expo-router';
+
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+
+/**
+ * {{COMPONENT_NAME}} — gerado pelo script `npm run new:screen`.
+ *
+ * Padrões mostrados aqui:
+ *  1. Estado local com `useState` (caso simples).
+ *  2. Leitura de params da rota com `useLocalSearchParams`.
+ *  3. Navegação declarativa com `<Link>` e imperativa com `router.push`.
+ *
+ * Apague os exemplos que não usar.
+ */
+export default function {{COMPONENT_NAME}}() {
+  const [count, setCount] = useState(0);
+
+  const params = useLocalSearchParams<{ id?: string }>();
+
+  return (
+    <ThemedView style={styles.container}>
+      <ThemedText type="title">{{TITLE}}</ThemedText>
+
+      {params.id ? <ThemedText>Param id: {params.id}</ThemedText> : null}
+
+      <ThemedText>Count: {count}</ThemedText>
+
+      <Pressable onPress={() => setCount((c) => c + 1)} style={styles.button}>
+        <ThemedText>Increment</ThemedText>
+      </Pressable>
+
+      <Link href="/" style={styles.link}>
+        <ThemedText type="link">Go home (Link)</ThemedText>
+      </Link>
+
+      <Pressable onPress={() => router.push('/')} style={styles.button}>
+        <ThemedText>Go home (router.push)</ThemedText>
+      </Pressable>
+    </ThemedView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 16,
+    gap: 12,
+  },
+  button: {
+    paddingVertical: 8,
+  },
+  link: {
+    paddingVertical: 8,
+  },
+});
