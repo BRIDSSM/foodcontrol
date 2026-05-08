@@ -1,12 +1,18 @@
 import { ScrollView, View } from 'react-native';
 import { Link } from 'expo-router';
+import { Lock, Mail } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/ui/form-field';
 import { Text } from '@/components/ui/text';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { getTheme } from '@/lib/theme';
 
 export default function LoginScreen() {
+  const colorScheme = useColorScheme();
+  const theme = getTheme(colorScheme);
+
   return (
     <SafeAreaView className="flex-1 bg-background">
       <ScrollView
@@ -39,6 +45,7 @@ export default function LoginScreen() {
               keyboardType="email-address"
               autoCapitalize="none"
               autoComplete="email"
+              leftIcon={<Mail size={16} color={theme.mutedForeground} />}
             />
             <View className="gap-1">
               <FormField
@@ -47,6 +54,7 @@ export default function LoginScreen() {
                 placeholder="Mínimo 6 caracteres"
                 secureTextEntry
                 autoComplete="current-password"
+                leftIcon={<Lock size={16} color={theme.mutedForeground} />}
               />
               <Link href="/(auth)/forgot-password" asChild>
                 <Button variant="ghost" className="self-end">
