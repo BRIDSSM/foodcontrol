@@ -1,11 +1,12 @@
 import { ScrollView, View } from 'react-native';
 import { router } from 'expo-router';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Plus } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
-import { STATUS_COLORS } from '@/lib/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { getTheme, STATUS_COLORS } from '@/lib/theme';
 
 type StatusType = 'safe' | 'warning' | 'expired';
 
@@ -38,6 +39,9 @@ function StatusChip({ label, count, status }: StatusChipProps) {
 }
 
 export default function HomeScreen() {
+  const colorScheme = useColorScheme() ?? 'light';
+  const theme = getTheme(colorScheme);
+
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
       <ScrollView
@@ -80,11 +84,12 @@ export default function HomeScreen() {
       <View className="absolute bottom-6 right-4">
         <Button
           size="lg"
-          className="rounded-full px-6"
+          className="flex-row items-center gap-2 rounded-full px-6"
           accessibilityLabel="Adicionar produto"
           onPress={() => router.push('/product/new')}
         >
-          <Text>+ Adicionar</Text>
+          <Plus size={18} color={theme.primaryForeground} />
+          <Text>Adicionar</Text>
         </Button>
       </View>
     </SafeAreaView>
