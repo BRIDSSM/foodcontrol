@@ -8,6 +8,25 @@ import { DarkTheme, DefaultTheme, type Theme } from '@react-navigation/native';
  *
  * Mantenha sincronizado quando alterar `global.css`.
  */
+export const STATUS_COLORS = {
+  light: {
+    safe: 'hsl(142, 70%, 35%)',
+    warning: 'hsl(38, 86%, 42%)',
+    expired: 'hsl(0, 72%, 51%)',
+    safeBg: 'hsl(142, 60%, 94%)',
+    warningBg: 'hsl(38, 86%, 93%)',
+    expiredBg: 'hsl(0, 72%, 95%)',
+  },
+  dark: {
+    safe: 'hsl(142, 65%, 50%)',
+    warning: 'hsl(38, 86%, 55%)',
+    expired: 'hsl(0, 62%, 55%)',
+    safeBg: 'hsl(142, 35%, 15%)',
+    warningBg: 'hsl(38, 40%, 16%)',
+    expiredBg: 'hsl(0, 30%, 18%)',
+  },
+} as const;
+
 export const THEME = {
   light: {
     background: 'hsl(0, 0%, 100%)',

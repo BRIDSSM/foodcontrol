@@ -41,6 +41,14 @@ module.exports = {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
+        status: {
+          safe: 'hsl(var(--status-safe))',
+          warning: 'hsl(var(--status-warning))',
+          expired: 'hsl(var(--status-expired))',
+          'safe-bg': 'hsl(var(--status-safe-bg))',
+          'warning-bg': 'hsl(var(--status-warning-bg))',
+          'expired-bg': 'hsl(var(--status-expired-bg))',
+        },
       },
       borderRadius: {
         lg: 'var(--radius)',

@@ -44,6 +44,14 @@
     --chart-3: 28 86% 56%;
     --chart-4: 270 65% 56%;
     --chart-5: 190 80% 45%;
+
+    /* Semáforo de validade — usar via classes Tailwind (bg-status-safe, text-status-warning etc.) */
+    --status-safe: 142 70% 35%;
+    --status-warning: 38 86% 42%;
+    --status-expired: 0 72% 51%;
+    --status-safe-bg: 142 60% 94%;
+    --status-warning-bg: 38 86% 93%;
+    --status-expired-bg: 0 72% 95%;
   }
 
   .dark:root {
@@ -78,5 +86,12 @@
     --chart-3: 28 86% 62%;
     --chart-4: 270 65% 65%;
     --chart-5: 190 80% 55%;
+
+    --status-safe: 142 65% 50%;
+    --status-warning: 38 86% 55%;
+    --status-expired: 0 62% 55%;
+    --status-safe-bg: 142 35% 15%;
+    --status-warning-bg: 38 40% 16%;
+    --status-expired-bg: 0 30% 18%;
   }
 }
