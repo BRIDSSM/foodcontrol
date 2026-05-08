@@ -1,50 +1,120 @@
-# Welcome to your Expo app 👋
+# FoodControl
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+> App mobile de controle de validade e inventário de alimentos domésticos.  
+> Objetivo: reduzir desperdício alimentar via monitoramento automatizado e alertas inteligentes.
 
-## Get started
+---
 
-1. Install dependencies
+## Problema
+
+Famílias brasileiras descartam ~128,8 kg de alimentos por ano (≈ R$ 1.000) por falta de visibilidade do estoque doméstico.
+
+## Solução
+
+Cadastro de produtos com data de validade (manual ou via código de barras), classificação automática por status (semáforo verde/amarelo/vermelho), alertas locais e métricas de aproveitamento mensal.
+
+---
+
+## Stack
+
+| Camada         | Tecnologia                                            |
+| -------------- | ----------------------------------------------------- |
+| Mobile         | React Native + Expo (managed workflow)                |
+| Linguagem      | TypeScript (strict)                                   |
+| Navegação      | Expo Router (file-based)                              |
+| Estado         | React Query + Zustand/Context                         |
+| Formulários    | React Hook Form + Zod                                 |
+| UI             | react-native-reusables + NativeWind v4                |
+| Backend        | Supabase (Postgres + Auth + Storage + Edge Functions) |
+| Notificações   | expo-notifications (locais)                           |
+| Câmera/Barcode | expo-camera                                           |
+| API externa    | Cosmos by Bluesoft (lookup GTIN/EAN)                  |
+
+---
+
+## Pré-requisitos
+
+- Node.js 18+
+- Expo CLI
+- Conta Supabase
+- (Opcional) Token Cosmos by Bluesoft
+
+---
+
+## Configuração
+
+1. Instale dependências:
 
    ```bash
    npm install
    ```
 
-2. Start the app
+2. Crie `.env` na raiz com:
+
+   ```env
+   EXPO_PUBLIC_SUPABASE_URL=
+   EXPO_PUBLIC_SUPABASE_ANON_KEY=
+   EXPO_PUBLIC_COSMOS_TOKEN=
+   ```
+
+3. Aplique o schema no Supabase (tabelas, RLS, triggers) conforme `CLAUDE.md` seção 4.
+
+4. Inicie o app:
 
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+---
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Estrutura de Pastas
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+app/                    # Rotas (Expo Router)
+  (auth)/               # login, register, forgot-password
+  (tabs)/               # Home, Stats, Profile
+  product/              # [id], new, scan, edit/[id]
+components/
+  ui/                   # Botões, inputs, cards
+  product/              # ProductCard, StatusBadge, CountdownLabel
+  forms/                # ProductForm, RemoveProductSheet
+lib/                    # supabase, status, date utils, notifications
+services/               # cosmos.ts (API Bluesoft)
+features/               # inventory, auth, stats, notifications
+schemas/                # Zod schemas compartilhados
+types/                  # Tipos TS (Supabase gerado, Cosmos)
+constants/              # categories.ts, locations.ts
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+---
 
-## Learn more
+## Lógica de Status (Semáforo)
 
-To learn more about developing your project with Expo, look at the following resources:
+```ts
+function getStatus(expirationDate: Date, warningDays = 5) {
+  const diff = differenceInDays(startOfDay(expirationDate), startOfDay(new Date()));
+  if (diff < 0) return 'expired'; // 🔴
+  if (diff <= warningDays) return 'warning'; // 🟡
+  return 'safe'; // 🟢
+}
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Status **nunca é persistido** — calculado em tempo real no cliente.
 
-## Join the community
+---
 
-Join our community of developers creating universal apps.
+## Roadmap
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- **Fase 1 — MVP:** Auth + CRUD de produtos + lista com semáforo + remoção com histórico
+- **Fase 2 — Inteligência:** Notificações locais + estatísticas + configurações
+- **Fase 3 — UX premium:** Scanner de barcode + upload de imagem + busca avançada
+- **Fase 4 — Polimento:** Onboarding + animações + testes
+
+---
+
+## Convenções
+
+- Arquivos: `kebab-case` | Componentes: `PascalCase`
+- Hooks: prefixo `use*`, retornam `{ data, isLoading, error }`
+- Mutations: infinitivo (`createProduct`, `removeProduct`)
+- Commits: Conventional Commits (`feat:`, `fix:`, `chore:`, `refactor:`)
