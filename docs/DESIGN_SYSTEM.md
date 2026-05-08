@@ -235,7 +235,32 @@ Se trocar um token, valide o par texto/fundo correspondente em <https://webaim.o
 
 ## Scanner
 
-A tela de scanner (`app/(tabs)/scanner.tsx`) é **sempre dark** por design (UI sobreposta à câmera). Suas cores estão centralizadas em `components/scanner/scanner-theme.ts` e derivam dos tokens dark do design system. Quando você muda a primária do app, a borda do viewfinder, a linha de scan e o texto de marca acompanham.
+A tela de scanner (`app/product/scan.tsx`) é **sempre dark** por design (UI sobreposta à câmera). Suas cores estão centralizadas em `components/scanner/scanner-theme.ts` e derivam dos tokens dark do design system. Quando você muda a primária do app, a borda do viewfinder, a linha de scan e o texto de marca acompanham.
+
+## Status semáforo
+
+Três tokens semânticos expõem as cores do sistema de validade (verde/âmbar/vermelho) com suporte a light e dark:
+
+| Classe Tailwind        | Variável CSS          | Uso                             |
+| ---------------------- | --------------------- | ------------------------------- |
+| `text-status-safe`     | `--status-safe`       | Texto/ícone de itens em dia.    |
+| `text-status-warning`  | `--status-warning`    | Texto/ícone de itens a vencer.  |
+| `text-status-expired`  | `--status-expired`    | Texto/ícone de itens vencidos.  |
+| `bg-status-safe-bg`    | `--status-safe-bg`    | Fundo de chip/badge "Em dia".   |
+| `bg-status-warning-bg` | `--status-warning-bg` | Fundo de chip/badge "A vencer". |
+| `bg-status-expired-bg` | `--status-expired-bg` | Fundo de chip/badge "Vencido".  |
+
+Para uso fora do Tailwind (cor dinâmica em `style`):
+
+```ts
+import { STATUS_COLORS } from '@/lib/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+
+const colorScheme = useColorScheme() ?? 'light';
+const palette = STATUS_COLORS[colorScheme];
+// palette.safe, palette.warning, palette.expired
+// palette.safeBg, palette.warningBg, palette.expiredBg
+```
 
 ---
 

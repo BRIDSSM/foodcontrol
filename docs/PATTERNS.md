@@ -255,17 +255,34 @@ Sempre limpe assinaturas no return — evita memory leak.
 
 ## 4. Theming
 
-`ThemedText` e `ThemedView` (em `components/`) já cuidam de light/dark mode automaticamente. Use elas em vez de `Text` / `View` puros sempre que possível.
+O projeto usa **react-native-reusables + NativeWind v4**. Tokens de cor (light/dark) estão em `global.css` e espelhados em `lib/theme.ts`. Dark mode acompanha o sistema automaticamente — nenhum código extra necessário.
+
+Use os componentes do design system em vez de `Text` / `View` puros:
 
 ```tsx
-<ThemedView style={{ flex: 1 }}>
-  <ThemedText type="title">Olá</ThemedText>
-  <ThemedText type="subtitle">Subtítulo</ThemedText>
-  <ThemedText>Texto padrão</ThemedText>
-</ThemedView>
+import { View } from 'react-native';
+import { Text } from '@/components/ui/text';
+
+<View className="flex-1 bg-background p-4">
+  <Text variant="h1">Olá</Text>
+  <Text variant="lead">Subtítulo</Text>
+  <Text variant="muted">Texto secundário</Text>
+  <Text>Texto padrão</Text>
+</View>;
 ```
 
-Cores customizadas: edite `constants/theme.ts`. Acesse via `useThemeColor({}, 'text')`.
+Para cor fora de classes Tailwind (animações, `StyleSheet`, libs externas):
+
+```ts
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { getTheme } from '@/lib/theme';
+
+const { colorScheme } = useColorScheme();
+const theme = getTheme(colorScheme);
+// theme.primary === 'hsl(224, 76%, 48%)' (light) | 'hsl(224, 76%, 53%)' (dark)
+```
+
+Ver `docs/DESIGN_SYSTEM.md` para a lista completa de tokens e componentes disponíveis.
 
 ---
 
