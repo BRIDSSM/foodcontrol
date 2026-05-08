@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Text } from '@/components/ui/text';
+import { useAuth } from '@/contexts/auth';
 
 function MenuRow({
   label,
@@ -30,6 +31,8 @@ function MenuRow({
 }
 
 export default function ProfileScreen() {
+  const { signOut } = useAuth();
+
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
       <ScrollView contentContainerStyle={{ padding: 16, gap: 20, paddingBottom: 32 }}>
@@ -62,8 +65,8 @@ export default function ProfileScreen() {
 
         {/* Sair */}
         <Card className="gap-0 py-0">
-          {/* TODO: supabase.auth.signOut → router.replace('/(auth)/login') */}
-          <MenuRow label="Sair" onPress={() => {}} destructive />
+          {/* TODO: supabase.auth.signOut → signOut() */}
+          <MenuRow label="Sair" onPress={signOut} destructive />
         </Card>
       </ScrollView>
     </SafeAreaView>

@@ -6,10 +6,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/ui/form-field';
 import { Text } from '@/components/ui/text';
+import { useAuth } from '@/contexts/auth';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { getTheme } from '@/lib/theme';
 
 export default function LoginScreen() {
+  const { signIn } = useAuth();
   const colorScheme = useColorScheme();
   const theme = getTheme(colorScheme);
 
@@ -65,8 +67,8 @@ export default function LoginScreen() {
           </View>
 
           <View className="gap-3">
-            {/* TODO: handleSubmit (Zod) → supabase.auth.signInWithPassword → router.replace('/(tabs)') */}
-            <Button className="w-full" accessibilityLabel="Entrar" onPress={() => {}}>
+            {/* TODO: handleSubmit (Zod) → supabase.auth.signInWithPassword → signIn() */}
+            <Button className="w-full" accessibilityLabel="Entrar" onPress={signIn}>
               <Text>Entrar</Text>
             </Button>
 

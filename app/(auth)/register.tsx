@@ -5,8 +5,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/ui/form-field';
 import { Text } from '@/components/ui/text';
+import { useAuth } from '@/contexts/auth';
 
 export default function RegisterScreen() {
+  const { signIn } = useAuth();
+
   return (
     <SafeAreaView className="flex-1 bg-background">
       <ScrollView
@@ -52,8 +55,8 @@ export default function RegisterScreen() {
         </View>
 
         <View className="gap-3">
-          {/* TODO: handleSubmit (Zod) → supabase.auth.signUp → tela "Verifique seu e-mail" */}
-          <Button className="w-full" accessibilityLabel="Criar conta" onPress={() => {}}>
+          {/* TODO: handleSubmit (Zod) → supabase.auth.signUp → signIn() */}
+          <Button className="w-full" accessibilityLabel="Criar conta" onPress={signIn}>
             <Text>Criar conta</Text>
           </Button>
 
