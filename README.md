@@ -27,7 +27,8 @@ Cadastro de produtos com data de validade (manual ou via código de barras), cla
 | UI             | react-native-reusables + NativeWind v4                |
 | Backend        | Supabase (Postgres + Auth + Storage + Edge Functions) |
 | Notificações   | expo-notifications (locais)                           |
-| Câmera/Barcode | expo-camera                                           |
+| Câmera/Barcode | expo-camera + expo-image-picker                       |
+| Imagens        | expo-image (exibição), expo-image-picker (galeria)    |
 | API externa    | Cosmos by Bluesoft (lookup GTIN/EAN)                  |
 
 ---
@@ -105,9 +106,9 @@ Status **nunca é persistido** — calculado em tempo real no cliente.
 
 ## Roadmap
 
-- **Fase 1 — MVP:** Auth + CRUD de produtos + lista com semáforo + remoção com histórico
-- **Fase 2 — Inteligência:** Notificações locais + estatísticas + configurações
-- **Fase 3 — UX premium:** Scanner de barcode + upload de imagem + busca avançada
+- **Fase 1 — MVP ✅:** Auth + CRUD de produtos + lista com semáforo + remoção com histórico
+- **Fase 2 — Inteligência (parcial):** Scanner de barcode + cache Cosmos + imagem no formulário ✅ | Notificações locais + estatísticas + configurações
+- **Fase 3 — UX premium:** Upload de imagem para Supabase Storage + busca avançada
 - **Fase 4 — Polimento:** Onboarding + animações + testes
 
 ---
