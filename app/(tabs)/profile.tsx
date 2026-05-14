@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Text } from '@/components/ui/text';
-import { useAuth } from '@/contexts/auth';
+import { supabase } from '@/lib/supabase';
 
 function MenuRow({
   label,
@@ -31,7 +31,9 @@ function MenuRow({
 }
 
 export default function ProfileScreen() {
-  const { signOut } = useAuth();
+  async function signOut() {
+    await supabase.auth.signOut();
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>

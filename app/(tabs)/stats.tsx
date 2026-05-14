@@ -16,7 +16,7 @@ function StatCard({
   children?: React.ReactNode;
 }) {
   return (
-    <Card>
+    <Card className="flex-1">
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         {description && <CardDescription>{description}</CardDescription>}
