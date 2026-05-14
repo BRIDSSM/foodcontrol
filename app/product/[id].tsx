@@ -1,5 +1,6 @@
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Archive,
   Barcode,
@@ -205,6 +206,7 @@ export default function ProductDetailScreen() {
   const palette = STATUS_COLORS[colorScheme];
 
   const [showRemoveSheet, setShowRemoveSheet] = useState(false);
+  const insets = useSafeAreaInsets();
 
   if (isLoading) {
     return (
@@ -237,7 +239,7 @@ export default function ProductDetailScreen() {
     <View className="flex-1 bg-background">
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingBottom: 120 }}
+        contentContainerStyle={{ paddingBottom: 96 + insets.bottom }}
         showsVerticalScrollIndicator={false}
       >
         {/* Hero */}
@@ -321,8 +323,9 @@ export default function ProductDetailScreen() {
 
       {/* Footer fixo */}
       <View
-        className="absolute bottom-0 left-0 right-0 flex-row gap-3 px-5 pb-8 pt-4"
+        className="absolute bottom-0 left-0 right-0 flex-row gap-3 px-5 pt-4"
         style={{
+          paddingBottom: insets.bottom + 16,
           backgroundColor: theme.background,
           borderTopWidth: 1,
           borderTopColor: theme.border,
