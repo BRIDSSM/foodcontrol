@@ -24,9 +24,10 @@ type Props = {
   state: LookupState;
   gtin: string;
   onScanAgain: () => void;
+  onUseProduct?: (product: CosmosProduct, gtin: string) => void;
 };
 
-export function ResultCard({ state, gtin, onScanAgain }: Props) {
+export function ResultCard({ state, gtin, onScanAgain, onUseProduct }: Props) {
   return (
     <View
       className="absolute bottom-10 left-4 right-4 max-h-[55%] gap-3 rounded-[20px] p-5"
@@ -48,9 +49,57 @@ export function ResultCard({ state, gtin, onScanAgain }: Props) {
       </ScrollView>
 
       <Separator style={{ backgroundColor: SCANNER_DIVIDER }} />
-      <Button className="w-full" accessibilityLabel="Escanear novamente" onPress={onScanAgain}>
-        <Text>Escanear novamente</Text>
-      </Button>
+
+      <View className="gap-2">
+        {state.status === 'success' && onUseProduct ? (
+          <Button
+            className="w-full"
+            accessibilityLabel="Usar este produto"
+            onPress={() => onUseProduct(state.product, gtin)}
+          >
+            <Text>Usar este produto</Text>
+          </Button>
+        ) : null}
+        {state.status === 'error' && onUseProduct ? (
+          <Button
+            variant="outline"
+            className="w-full"
+            accessibilityLabel="Preencher manualmente"
+            onPress={() =>
+              onUseProduct(
+                {
+                  description: '',
+                  gtin: Number(gtin),
+                  thumbnail: null,
+                  avg_price: null,
+                  min_price: null,
+                  max_price: null,
+                  net_weight: null,
+                  gross_weight: null,
+                  brand: null,
+                  category: null,
+                  ncm: null,
+                  gtins: [],
+                },
+                gtin,
+              )
+            }
+          >
+            <Text style={{ color: SCANNER_TEXT }}>Preencher manualmente</Text>
+          </Button>
+        ) : null}
+        <Button
+          variant={state.status === 'success' ? 'outline' : 'default'}
+          className="w-full"
+          accessibilityLabel="Escanear novamente"
+          onPress={onScanAgain}
+          style={state.status !== 'success' ? undefined : { borderColor: 'rgba(255,255,255,0.15)' }}
+        >
+          <Text style={state.status === 'success' ? { color: SCANNER_TEXT } : undefined}>
+            Escanear novamente
+          </Text>
+        </Button>
+      </View>
     </View>
   );
 }

@@ -5,7 +5,10 @@ import {
   CosmosNotFoundError,
   CosmosRequestError,
   fetchCosmosProduct,
+  mapCosmosToCategory,
 } from '@/services/cosmos';
+import { supabase } from '@/lib/supabase';
+import type { Json } from '@/types/database';
 import type { CosmosProduct } from '@/types/cosmos';
 
 export type LookupState =
@@ -47,6 +50,40 @@ function messageFromError(err: unknown): string {
   return 'Falha de conexão com a API Cosmos.';
 }
 
+async function saveToCache(gtin: string, product: CosmosProduct): Promise<void> {
+  const { error } = await supabase.from('barcode_cache').insert({
+    gtin,
+    name: product.description,
+    thumbnail_url: product.thumbnail ?? null,
+    category: mapCosmosToCategory(product.category?.description),
+    raw_response: product as unknown as Json,
+  });
+  if (__DEV__ && error) {
+    console.warn('[barcode-cache] insert failed:', error.code, error.message);
+  }
+}
+
+async function lookupWithCache(gtin: string, signal: AbortSignal): Promise<CosmosProduct> {
+  // 1. Tenta cache primeiro
+  const { data: cached } = await supabase
+    .from('barcode_cache')
+    .select('raw_response, name, thumbnail_url, category')
+    .eq('gtin', gtin)
+    .maybeSingle();
+
+  if (cached?.raw_response) {
+    return cached.raw_response as unknown as CosmosProduct;
+  }
+
+  // 2. Cache miss — consulta API
+  const product = await fetchCosmosProduct(gtin, signal);
+
+  // 3. Salva no cache em background (não aguarda, não bloqueia)
+  saveToCache(gtin, product).catch(() => {});
+
+  return product;
+}
+
 export function useProductLookup() {
   const [state, dispatch] = useReducer(reducer, { status: 'idle' });
   const controllerRef = useRef<AbortController | null>(null);
@@ -62,7 +99,7 @@ export function useProductLookup() {
 
     dispatch({ type: 'fetch' });
 
-    fetchCosmosProduct(gtin, controller.signal)
+    lookupWithCache(gtin, controller.signal)
       .then((product) => {
         if (!controller.signal.aborted) dispatch({ type: 'success', product });
       })

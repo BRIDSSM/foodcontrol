@@ -1,4 +1,66 @@
+import type { Enums } from '@/types/database';
 import type { CosmosProduct } from '@/types/cosmos';
+
+type ProductCategory = Enums<'product_category'>;
+
+const COSMOS_CATEGORY_MAP: Record<string, ProductCategory> = {
+  leite: 'laticinios',
+  creme: 'laticinios',
+  iogurte: 'laticinios',
+  queijo: 'laticinios',
+  manteiga: 'laticinios',
+  carne: 'carnes',
+  frango: 'carnes',
+  peixe: 'carnes',
+  atum: 'carnes',
+  sardinha: 'carnes',
+  fruta: 'hortifruti',
+  vegetal: 'hortifruti',
+  legume: 'hortifruti',
+  verdura: 'hortifruti',
+  pão: 'padaria',
+  biscoito: 'padaria',
+  bolacha: 'padaria',
+  bolo: 'padaria',
+  arroz: 'graos',
+  feijão: 'graos',
+  lentilha: 'graos',
+  grão: 'graos',
+  cereal: 'graos',
+  macarrão: 'massas',
+  massa: 'massas',
+  espaguete: 'massas',
+  suco: 'bebidas',
+  refrigerante: 'bebidas',
+  água: 'bebidas',
+  cerveja: 'bebidas',
+  vinho: 'bebidas',
+  chocolate: 'doces',
+  doce: 'doces',
+  açúcar: 'doces',
+  mel: 'doces',
+  geleia: 'doces',
+  sorvete: 'congelados',
+  congelado: 'congelados',
+  molho: 'temperos',
+  tempero: 'temperos',
+  sal: 'temperos',
+  vinagre: 'temperos',
+  azeite: 'temperos',
+  óleo: 'temperos',
+  conserva: 'enlatados',
+  enlatado: 'enlatados',
+  lata: 'enlatados',
+};
+
+export function mapCosmosToCategory(cosmosCategory: string | null | undefined): ProductCategory {
+  if (!cosmosCategory) return 'outros';
+  const lower = cosmosCategory.toLowerCase();
+  for (const [keyword, category] of Object.entries(COSMOS_CATEGORY_MAP)) {
+    if (lower.includes(keyword)) return category;
+  }
+  return 'outros';
+}
 
 const COSMOS_BASE_URL = 'https://api.cosmos.bluesoft.com.br';
 const REQUEST_TIMEOUT_MS = 8000;

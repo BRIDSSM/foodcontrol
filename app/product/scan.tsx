@@ -1,5 +1,6 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as Haptics from 'expo-haptics';
+import { router } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import { Linking, View } from 'react-native';
 
@@ -9,7 +10,9 @@ import { ResultCard } from '@/components/scanner/result-card';
 import { SCANNER_BG, SCANNER_TEXT, SCANNER_TEXT_MUTED } from '@/components/scanner/scanner-theme';
 import { ViewportOverlay } from '@/components/scanner/viewport-overlay';
 import { useProductLookup } from '@/hooks/use-product-lookup';
-import type { ScannedBarcode } from '@/types/cosmos';
+import { mapCosmosToCategory } from '@/services/cosmos';
+import { useScanStore } from '@/stores/scan';
+import type { CosmosProduct, ScannedBarcode } from '@/types/cosmos';
 import { SCAN_CONFIRMS_NEEDED, isValidGS1 } from '@/utils/barcode';
 
 const BARCODE_TYPES = ['ean13', 'ean8', 'upc_a', 'upc_e', 'itf14'] as const;
@@ -20,6 +23,20 @@ export default function ScannerScreen() {
 
   const pendingRef = useRef<{ data: string; count: number } | null>(null);
   const { state: lookupState, lookup, reset: resetLookup } = useProductLookup();
+  const setScanData = useScanStore((s) => s.set);
+
+  const handleUseProduct = useCallback(
+    (product: CosmosProduct, gtin: string) => {
+      setScanData({
+        name: product.description ?? '',
+        barcode: gtin,
+        category: mapCosmosToCategory(product.category?.description),
+        image_url: product.thumbnail ?? undefined,
+      });
+      router.back();
+    },
+    [setScanData],
+  );
 
   const handleBarcodeScanned = useCallback(
     ({ type, data }: { type: string; data: string }) => {
@@ -114,7 +131,12 @@ export default function ScannerScreen() {
       </View>
 
       {scanned ? (
-        <ResultCard state={lookupState} gtin={scanned.data} onScanAgain={handleScanAgain} />
+        <ResultCard
+          state={lookupState}
+          gtin={scanned.data}
+          onScanAgain={handleScanAgain}
+          onUseProduct={handleUseProduct}
+        />
       ) : null}
     </View>
   );
