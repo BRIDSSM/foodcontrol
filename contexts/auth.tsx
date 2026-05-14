@@ -1,22 +1,40 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { supabase } from '@/lib/supabase';
+import type { Session, User } from '@supabase/supabase-js';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
 type AuthContextValue = {
+  session: Session | null;
+  user: User | null;
   isSignedIn: boolean;
-  signIn: () => void;
-  signOut: () => void;
+  isLoading: boolean;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isSignedIn, setIsSignedIn] = useState(false);
+  const [session, setSession] = useState<Session | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      setIsLoading(false);
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, s) => {
+      setSession(s);
+    });
+
+    return () => listener.subscription.unsubscribe();
+  }, []);
 
   return (
     <AuthContext.Provider
       value={{
-        isSignedIn,
-        signIn: () => setIsSignedIn(true),
-        signOut: () => setIsSignedIn(false),
+        session,
+        user: session?.user ?? null,
+        isSignedIn: !!session,
+        isLoading,
       }}
     >
       {children}

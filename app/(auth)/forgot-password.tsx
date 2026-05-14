@@ -1,5 +1,5 @@
-import { ScrollView, View } from 'react-native';
 import { Link } from 'expo-router';
+import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/button';
@@ -11,10 +11,10 @@ export default function ForgotPasswordScreen() {
     <SafeAreaView className="flex-1 bg-background">
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24, gap: 32 }}
+        contentContainerStyle={{ padding: 24, gap: 32 }}
         keyboardShouldPersistTaps="handled"
       >
-        <View className="gap-2">
+        <View className="gap-2 pt-4">
           <Text variant="h2">Recuperar senha</Text>
           <Text variant="muted">
             Informe seu e-mail e enviaremos um link para redefinir sua senha.

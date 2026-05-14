@@ -2,6 +2,7 @@ import '@/global.css';
 
 import { PortalHost } from '@rn-primitives/portal';
 import { ThemeProvider } from '@react-navigation/native';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
@@ -11,8 +12,10 @@ import { AuthProvider, useAuth } from '@/contexts/auth';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { NAV_THEME } from '@/lib/theme';
 
+const queryClient = new QueryClient();
+
 function AuthGuard() {
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, isLoading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
@@ -22,14 +25,14 @@ function AuthGuard() {
   }, []);
 
   useEffect(() => {
-    if (!mounted) return;
+    if (!mounted || isLoading) return;
     const inAuthGroup = segments[0] === '(auth)';
     if (!isSignedIn && !inAuthGroup) {
       router.replace('/(auth)/login');
     } else if (isSignedIn && inAuthGroup) {
       router.replace('/(tabs)');
     }
-  }, [isSignedIn, segments, mounted]);
+  }, [isSignedIn, isLoading, segments, mounted]);
 
   return null;
 }
@@ -42,17 +45,19 @@ export default function RootLayout() {
   const colorScheme = useColorScheme() ?? 'light';
 
   return (
-    <AuthProvider>
-      <ThemeProvider value={NAV_THEME[colorScheme]}>
-        <AuthGuard />
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          <Stack.Screen name="product" options={{ headerShown: false }} />
-        </Stack>
-        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
-        <PortalHost />
-      </ThemeProvider>
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <ThemeProvider value={NAV_THEME[colorScheme]}>
+          <AuthGuard />
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+            <Stack.Screen name="product" options={{ headerShown: false }} />
+          </Stack>
+          <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+          <PortalHost />
+        </ThemeProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
