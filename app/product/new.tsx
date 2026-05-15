@@ -407,9 +407,9 @@ export default function AddProductScreen() {
                   display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                   onValueChange={(_event, date: Date) => {
                     if (Platform.OS === 'android') setShowDatePicker(false);
-                    const y = date.getFullYear();
-                    const m = String(date.getMonth() + 1).padStart(2, '0');
-                    const d = String(date.getDate()).padStart(2, '0');
+                    const y = date.getUTCFullYear();
+                    const m = String(date.getUTCMonth() + 1).padStart(2, '0');
+                    const d = String(date.getUTCDate()).padStart(2, '0');
                     field.onChange(`${y}-${m}-${d}`);
                   }}
                   onDismiss={() => setShowDatePicker(false)}
