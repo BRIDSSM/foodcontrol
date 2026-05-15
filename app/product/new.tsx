@@ -25,6 +25,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/ui/form-field';
@@ -54,6 +55,7 @@ export default function AddProductScreen() {
   const theme = getTheme(colorScheme);
   const { user } = useAuth();
   const { mutate: createProduct, isPending } = useCreateProduct();
+  const insets = useSafeAreaInsets();
 
   const scanData = useScanStore((s) => s.data);
   const clearScan = useScanStore((s) => s.clear);
@@ -125,7 +127,7 @@ export default function AddProductScreen() {
     >
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ gap: 20, padding: 16, paddingBottom: 40 }}
+        contentContainerStyle={{ gap: 20, padding: 16, paddingBottom: 40 + insets.bottom }}
         keyboardShouldPersistTaps="handled"
       >
         {/* Imagem do produto */}
