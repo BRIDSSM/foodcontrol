@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -6,7 +7,16 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Text } from '@/components/ui/text';
+import { useAuth } from '@/contexts/auth';
+import { useProfile } from '@/features/profile/queries';
 import { supabase } from '@/lib/supabase';
+
+function initials(name: string | null | undefined): string {
+  if (!name) return '?';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0][0].toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
 
 function MenuRow({
   label,
@@ -31,6 +41,12 @@ function MenuRow({
 }
 
 export default function ProfileScreen() {
+  const { user } = useAuth();
+  const { data: profile } = useProfile();
+
+  const displayName = profile?.full_name ?? user?.user_metadata?.full_name ?? '';
+  const email = user?.email ?? '';
+
   async function signOut() {
     await supabase.auth.signOut();
   }
@@ -41,33 +57,25 @@ export default function ProfileScreen() {
         {/* Avatar + dados do usuário */}
         <View className="items-center gap-3 py-6">
           <Avatar alt="Foto do usuário" className="h-20 w-20">
-            {/* TODO: <AvatarImage source={{ uri: profile.avatar_url }} /> quando disponível */}
             <AvatarFallback>
-              {/* TODO: iniciais do nome (ex: "MV" para Maria Vasconcelos) */}
-              <Text className="text-2xl font-semibold">—</Text>
+              <Text className="text-2xl font-semibold">{initials(displayName)}</Text>
             </AvatarFallback>
           </Avatar>
           <View className="items-center gap-0.5">
-            {/* TODO: preencher com dados de profiles via TanStack Query */}
-            <Text variant="h3">Nome do usuário</Text>
-            <Text variant="muted">email@exemplo.com</Text>
+            {displayName ? <Text variant="h3">{displayName}</Text> : null}
+            <Text variant="muted">{email}</Text>
           </View>
         </View>
 
         {/* Menu principal */}
         <Card className="gap-0 py-0">
-          {/* TODO: router.push('/profile/edit') */}
-          <MenuRow label="Editar perfil" onPress={() => {}} />
-          <Separator />
-          {/* TODO: router.push('/profile/settings') — warning_days, notificações, horário */}
-          <MenuRow label="Configurações" onPress={() => {}} />
+          <MenuRow label="Configurações" onPress={() => router.push('/profile/settings')} />
           <Separator />
           <MenuRow label="Sobre" onPress={() => {}} />
         </Card>
 
         {/* Sair */}
         <Card className="gap-0 py-0">
-          {/* TODO: supabase.auth.signOut → signOut() */}
           <MenuRow label="Sair" onPress={signOut} destructive />
         </Card>
       </ScrollView>
