@@ -228,31 +228,69 @@ O formulário de cadastro permite adicionar uma imagem de duas formas:
 
 ---
 
-## 7. Queries de estatísticas
+## 7. Estatísticas
 
-As stats são calculadas a partir da tabela `product_removals`. Os campos relevantes:
+As stats são calculadas a partir da tabela `product_removals`. O hook `useStats(period)` (`features/stats/queries.ts`) busca os registros do período escolhido e agrega tudo no cliente.
 
-- `destination` — `'consumido'` ou `'descartado'`
-- `was_expired` — se o item já estava vencido quando foi removido
-- `removed_at` — timestamp da remoção (para filtrar por período)
+### Períodos disponíveis
 
-**Taxa de aproveitamento:**
+| Valor   | Janela                   |
+| ------- | ------------------------ |
+| `'7d'`  | últimos 7 dias           |
+| `'30d'` | últimos 30 dias (padrão) |
+| `'90d'` | últimos 90 dias          |
+| `'12m'` | últimos 12 meses         |
 
+### Métricas calculadas
+
+| Métrica                | Fórmula                                                            |
+| ---------------------- | ------------------------------------------------------------------ |
+| Taxa de aproveitamento | `consumidos / (consumidos + descartados) × 100`                    |
+| Consumidos             | contagem de linhas com `destination = 'consumido'`                 |
+| Descartados            | contagem de linhas com `destination = 'descartado'`                |
+| Desperdício evitado    | consumidos onde `was_expired = false` (saiu antes de vencer)       |
+| Por categoria          | agrupamento das contagens por `category`, ordenado pelo total desc |
+
+### Cache e invalidação
+
+A query key tem formato `['stats', period, userId]`. Ao consumir ou descartar um produto, `useRemoveProduct` invalida o prefixo `['stats']`, o que força o re-fetch de qualquer período ativo na tela de estatísticas.
+
+```ts
+// features/inventory/mutations.ts — onSuccess de useRemoveProduct
+qc.invalidateQueries({ queryKey: inventoryKeys.all });
+qc.invalidateQueries({ queryKey: ['stats'] });
 ```
-consumidos / (consumidos + descartados) × 100
-```
-
-**Desperdício evitado:**
-
-```
-destination = 'consumido' AND was_expired = false
-```
-
-A implementação completa das queries de stats fica em `features/stats/` (a criar).
 
 ---
 
-## 8. Fluxo de dados completo (exemplo: adicionar produto)
+## 8. Fluxo de consumo e descarte
+
+O produto pode ser consumido ou descartado diretamente da tela de detalhes. O fluxo é:
+
+```
+ProductDetailScreen
+  ├── botão "Consumir"  → abre ActionSheet com destination = 'consumido'
+  └── botão "Descartar" → abre ActionSheet com destination = 'descartado'
+        ↓
+ActionSheet
+  - mostra título ("Consumir produto" ou "Descartar produto")
+  - campo de quantidade (pré-preenchido com o total do produto)
+  - botão de confirmação ("Registrar consumo" / "Registrar descarte")
+        ↓
+useRemoveProduct()
+  1. INSERT em product_removals (snapshot: nome, categoria, quantidade, destino, was_expired)
+  2. Se quantidade_removida >= produto.quantity → DELETE do produto
+     Senão → UPDATE decrementando a quantidade
+  3. onSuccess: invalida ['products'] e ['stats']
+```
+
+O campo `was_expired` é calculado **no momento da remoção** usando `getStatus()`. Se o produto já estava vencido quando o usuário registrou o consumo, isso fica registrado no histórico.
+
+O botão de editar fica no cabeçalho de navegação (canto superior direito) — ícone de lápis que leva para `/product/edit/[id]`.
+
+---
+
+## 9. Fluxo de dados completo (exemplo: adicionar produto)
 
 ```
 1. Usuário preenche formulário (AddProductScreen)
