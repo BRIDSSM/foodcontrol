@@ -1,4 +1,4 @@
-import { useFocusEffect, router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import {
   Archive,
   Plus,
@@ -108,7 +108,7 @@ export default function HomeScreen() {
     <View>
       {/* Header */}
       <View className="px-4 pb-3 pt-5">
-        <Text variant="h2">{firstName ? `Olá, ${firstName}! 👋` : 'Olá! 👋'}</Text>
+        <Text variant="h2">{firstName ? `Olá, ${firstName}!` : 'Olá!'}</Text>
         <Text variant="muted">
           {products.length === 0
             ? 'Seu estoque está vazio'
