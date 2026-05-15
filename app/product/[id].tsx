@@ -1,16 +1,17 @@
 import { Image } from 'expo-image';
-import { router, useLocalSearchParams } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import {
   Archive,
   Barcode,
   CheckCircle2,
   Package,
+  Pencil,
   Refrigerator,
   Snowflake,
   Trash2,
   TriangleAlert,
 } from 'lucide-react-native';
+
 import { useState } from 'react';
 import {
   ActivityIndicator,
@@ -19,9 +20,9 @@ import {
   Pressable,
   ScrollView,
   TextInput,
-  TouchableOpacity,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -64,36 +65,38 @@ function InfoRow({ label, value, icon }: { label: string; value: string; icon?: 
   );
 }
 
-type RemoveSheetProps = {
+type ActionSheetProps = {
   product: Product;
+  destination: 'consumido' | 'descartado';
   visible: boolean;
   onClose: () => void;
-  onDone: () => void;
 };
 
-function RemoveProductSheet({ product, visible, onClose, onDone }: RemoveSheetProps) {
+function ActionSheet({ product, destination, visible, onClose }: ActionSheetProps) {
   const colorScheme = useColorScheme() ?? 'light';
   const theme = getTheme(colorScheme);
+  const palette = STATUS_COLORS[colorScheme];
   const { mutate: removeProduct, isPending } = useRemoveProduct();
 
   const [quantityText, setQuantityText] = useState(String(product.quantity));
-  const [destination, setDestination] = useState<'consumido' | 'descartado' | null>(null);
 
   const qty = parseFloat(quantityText.replace(',', '.'));
-  const valid = destination !== null && !isNaN(qty) && qty > 0;
+  const valid = !isNaN(qty) && qty > 0;
+
+  const isConsume = destination === 'consumido';
+  const accentColor = isConsume ? palette.safe : palette.expired;
+  const Icon = isConsume ? CheckCircle2 : Trash2;
+  const title = isConsume ? 'Consumir produto' : 'Descartar produto';
+  const confirmLabel = isConsume ? 'Registrar consumo' : 'Registrar descarte';
 
   function handleConfirm() {
     if (!valid) return;
     removeProduct(
-      { product, quantity_removed: qty, destination: destination! },
+      { product, quantity_removed: qty, destination },
       {
         onSuccess: () => {
           onClose();
-          if (qty >= product.quantity) {
-            router.back();
-          } else {
-            onDone();
-          }
+          if (qty >= product.quantity) router.back();
         },
       },
     );
@@ -104,20 +107,27 @@ function RemoveProductSheet({ product, visible, onClose, onDone }: RemoveSheetPr
       <Pressable className="flex-1 justify-end bg-black/50" onPress={onClose}>
         <Pressable onPress={() => {}}>
           <View style={{ backgroundColor: theme.card }} className="rounded-t-2xl px-5 pb-10 pt-4">
-            <View className="mb-4 items-center">
+            {/* Handle */}
+            <View className="mb-5 items-center">
               <View className="h-1 w-10 rounded-full bg-muted-foreground/30" />
             </View>
 
-            <Text className="mb-1 text-lg font-bold">Remover produto</Text>
-            <Text className="mb-5 text-sm text-muted-foreground" numberOfLines={1}>
+            {/* Título com ícone */}
+            <View className="mb-1 flex-row items-center gap-2">
+              <Icon size={20} color={accentColor} />
+              <Text className="text-lg font-bold">{title}</Text>
+            </View>
+            <Text className="mb-6 text-sm text-muted-foreground" numberOfLines={1}>
               {product.name}
             </Text>
 
-            <Text className="mb-1.5 text-sm font-medium">Quantidade a remover</Text>
+            {/* Quantidade */}
+            <Text className="mb-1.5 text-sm font-medium">Quantidade</Text>
             <TextInput
               value={quantityText}
               onChangeText={setQuantityText}
               keyboardType="decimal-pad"
+              autoFocus
               style={{
                 borderWidth: 1,
                 borderColor: theme.border,
@@ -127,69 +137,18 @@ function RemoveProductSheet({ product, visible, onClose, onDone }: RemoveSheetPr
                 fontSize: 16,
                 color: theme.foreground,
                 backgroundColor: theme.background,
-                marginBottom: 20,
+                marginBottom: 24,
               }}
             />
 
-            <Text className="mb-3 text-sm font-medium">Para onde vai?</Text>
-            <View className="mb-6 flex-row gap-3">
-              <TouchableOpacity
-                onPress={() => setDestination('consumido')}
-                accessibilityLabel="Consumido"
-                className="flex-1 items-center gap-2 rounded-xl border-2 py-4"
-                style={{
-                  borderColor: destination === 'consumido' ? theme.primary : theme.border,
-                  backgroundColor:
-                    destination === 'consumido' ? `${theme.primary}18` : 'transparent',
-                }}
-              >
-                <CheckCircle2
-                  size={28}
-                  color={destination === 'consumido' ? theme.primary : theme.mutedForeground}
-                />
-                <Text
-                  className="text-sm font-semibold"
-                  style={{
-                    color: destination === 'consumido' ? theme.primary : theme.mutedForeground,
-                  }}
-                >
-                  Consumido
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={() => setDestination('descartado')}
-                accessibilityLabel="Descartado"
-                className="flex-1 items-center gap-2 rounded-xl border-2 py-4"
-                style={{
-                  borderColor: destination === 'descartado' ? theme.destructive : theme.border,
-                  backgroundColor:
-                    destination === 'descartado' ? `${theme.destructive}18` : 'transparent',
-                }}
-              >
-                <Trash2
-                  size={28}
-                  color={destination === 'descartado' ? theme.destructive : theme.mutedForeground}
-                />
-                <Text
-                  className="text-sm font-semibold"
-                  style={{
-                    color: destination === 'descartado' ? theme.destructive : theme.mutedForeground,
-                  }}
-                >
-                  Descartado
-                </Text>
-              </TouchableOpacity>
-            </View>
-
             <Button
               className="w-full"
-              accessibilityLabel="Confirmar remoção"
+              accessibilityLabel={confirmLabel}
               disabled={!valid || isPending}
               onPress={handleConfirm}
-              variant={destination === 'descartado' ? 'destructive' : 'default'}
+              variant={isConsume ? 'default' : 'destructive'}
             >
-              <Text>{isPending ? 'Removendo…' : 'Confirmar'}</Text>
+              <Text>{isPending ? 'Salvando…' : confirmLabel}</Text>
             </Button>
           </View>
         </Pressable>
@@ -204,9 +163,9 @@ export default function ProductDetailScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const theme = getTheme(colorScheme);
   const palette = STATUS_COLORS[colorScheme];
-
-  const [showRemoveSheet, setShowRemoveSheet] = useState(false);
   const insets = useSafeAreaInsets();
+
+  const [action, setAction] = useState<'consumido' | 'descartado' | null>(null);
 
   if (isLoading) {
     return (
@@ -237,6 +196,19 @@ export default function ProductDetailScreen() {
 
   return (
     <View className="flex-1 bg-background">
+      <Stack.Screen
+        options={{
+          headerRight: () => (
+            <Pressable
+              onPress={() => router.push(`/product/edit/${id}`)}
+              accessibilityLabel="Editar produto"
+              style={{ padding: 4 }}
+            >
+              <Pencil size={20} color={theme.foreground} />
+            </Pressable>
+          ),
+        }}
+      />
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ paddingBottom: 96 + insets.bottom }}
@@ -323,7 +295,7 @@ export default function ProductDetailScreen() {
 
       {/* Footer fixo */}
       <View
-        className="absolute bottom-0 left-0 right-0 flex-row gap-3 px-5 pt-4"
+        className="absolute bottom-0 left-0 right-0 flex-row gap-2 px-5 pt-4"
         style={{
           paddingBottom: insets.bottom + 16,
           backgroundColor: theme.background,
@@ -332,29 +304,33 @@ export default function ProductDetailScreen() {
         }}
       >
         <Button
-          variant="outline"
-          className="flex-1"
-          accessibilityLabel="Editar produto"
-          onPress={() => router.push(`/product/edit/${id}`)}
+          className="flex-1 flex-row items-center gap-1.5"
+          accessibilityLabel="Registrar consumo"
+          onPress={() => setAction('consumido')}
         >
-          <Text>Editar</Text>
+          <CheckCircle2 size={14} color={theme.primaryForeground} />
+          <Text>Consumir</Text>
         </Button>
+
         <Button
           variant="destructive"
-          className="flex-1"
-          accessibilityLabel="Remover produto"
-          onPress={() => setShowRemoveSheet(true)}
+          className="flex-1 flex-row items-center gap-1.5"
+          accessibilityLabel="Registrar descarte"
+          onPress={() => setAction('descartado')}
         >
-          <Text>Remover</Text>
+          <Trash2 size={14} color={theme.destructiveForeground} />
+          <Text>Descartar</Text>
         </Button>
       </View>
 
-      <RemoveProductSheet
-        product={product}
-        visible={showRemoveSheet}
-        onClose={() => setShowRemoveSheet(false)}
-        onDone={() => setShowRemoveSheet(false)}
-      />
+      {action ? (
+        <ActionSheet
+          product={product}
+          destination={action}
+          visible
+          onClose={() => setAction(null)}
+        />
+      ) : null}
     </View>
   );
 }
