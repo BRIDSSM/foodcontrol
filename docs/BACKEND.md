@@ -228,7 +228,25 @@ O formulário de cadastro permite adicionar uma imagem de duas formas:
 
 ---
 
-## 7. Estatísticas
+## 7. Perfil do usuário
+
+O perfil fica na tabela `profiles` (1:1 com `auth.users`). O hook `useProfile()` (`features/profile/queries.ts`) busca os dados do usuário logado. O hook `useUpdateProfile()` faz o update e invalida o cache automaticamente.
+
+### Campos relevantes
+
+| Campo                        | Tipo      | Padrão | Descrição                                    |
+| ---------------------------- | --------- | ------ | -------------------------------------------- |
+| `full_name`                  | `text`    | —      | Nome exibido na tela de perfil               |
+| `warning_days_before_expiry` | `int`     | `5`    | Dias antes do vencimento para alerta amarelo |
+| `notifications_enabled`      | `boolean` | `true` | Liga/desliga alertas locais                  |
+
+### Tela de configurações
+
+Permite alterar `warning_days_before_expiry` (chips: 3/5/7/10/14/30 dias) e `notifications_enabled` (toggle). O botão "Salvar" só fica habilitado quando há alteração não salva em relação ao valor atual do banco.
+
+---
+
+## 9. Estatísticas
 
 As stats são calculadas a partir da tabela `product_removals`. O hook `useStats(period)` (`features/stats/queries.ts`) busca os registros do período escolhido e agrega tudo no cliente.
 
@@ -263,7 +281,7 @@ qc.invalidateQueries({ queryKey: ['stats'] });
 
 ---
 
-## 8. Fluxo de consumo e descarte
+## 10. Fluxo de consumo e descarte
 
 O produto pode ser consumido ou descartado diretamente da tela de detalhes. O fluxo é:
 
@@ -290,7 +308,7 @@ O botão de editar fica no cabeçalho de navegação (canto superior direito) �
 
 ---
 
-## 9. Fluxo de dados completo (exemplo: adicionar produto)
+## 11. Fluxo de dados completo (exemplo: adicionar produto)
 
 ```
 1. Usuário preenche formulário (AddProductScreen)
