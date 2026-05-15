@@ -70,8 +70,6 @@ export default function ProfileScreen() {
         {/* Menu principal */}
         <Card className="gap-0 py-0">
           <MenuRow label="Configurações" onPress={() => router.push('/profile/settings')} />
-          <Separator />
-          <MenuRow label="Sobre" onPress={() => {}} />
         </Card>
 
         {/* Sair */}
