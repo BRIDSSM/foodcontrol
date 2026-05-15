@@ -75,6 +75,9 @@ export function useRemoveProduct() {
         if (error) throw error;
       }
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: inventoryKeys.all }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: inventoryKeys.all });
+      qc.invalidateQueries({ queryKey: ['stats'] });
+    },
   });
 }
