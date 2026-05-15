@@ -34,7 +34,7 @@ import { CATEGORY_LABELS } from '@/constants/labels';
 import { useAuth } from '@/contexts/auth';
 import { useCreateProduct } from '@/features/inventory/mutations';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { formatDate } from '@/lib/date';
+import { diffInDays, formatDate } from '@/lib/date';
 import { getTheme } from '@/lib/theme';
 import { productSchema, type ProductFormData, CATEGORIES } from '@/schemas/product';
 import type { Enums } from '@/types/database';
@@ -391,7 +391,7 @@ export default function AddProductScreen() {
                   <Text className="text-xs text-destructive">{fieldState.error.message}</Text>
                 </View>
               )}
-              {field.value && new Date(field.value) < new Date() && (
+              {field.value && diffInDays(field.value) < 0 && (
                 <View className="flex-row items-center gap-1">
                   <TriangleAlert size={12} color={theme.destructive} />
                   <Text className="text-xs text-muted-foreground">
