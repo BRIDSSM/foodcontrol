@@ -34,6 +34,8 @@ import { Text } from '@/components/ui/text';
 import { CATEGORY_LABELS } from '@/constants/labels';
 import { useUpdateProduct } from '@/features/inventory/mutations';
 import { useProduct } from '@/features/inventory/queries';
+import { isLocalUri, uploadProductImage } from '@/features/storage/upload';
+import { useAuth } from '@/contexts/auth';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { diffInDays, formatDate } from '@/lib/date';
 import { getTheme } from '@/lib/theme';
@@ -54,6 +56,7 @@ const LOCATION_CHIPS: {
 export default function EditProductScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: product, isLoading } = useProduct(id);
+  const { user } = useAuth();
   const colorScheme = useColorScheme() ?? 'light';
   const theme = getTheme(colorScheme);
   const { mutate: updateProduct, isPending } = useUpdateProduct();
@@ -117,7 +120,16 @@ export default function EditProductScreen() {
     }
   }
 
-  function onSubmit(values: ProductFormData) {
+  async function onSubmit(values: ProductFormData) {
+    let imageUrl = values.image_url ?? null;
+    if (imageUrl && isLocalUri(imageUrl) && user) {
+      try {
+        imageUrl = await uploadProductImage(imageUrl, user.id);
+      } catch {
+        imageUrl = null;
+      }
+    }
+
     updateProduct(
       {
         id,
@@ -127,7 +139,7 @@ export default function EditProductScreen() {
         storage_location: values.storage_location,
         quantity: values.quantity,
         expiration_date: values.expiration_date,
-        image_url: values.image_url ?? null,
+        image_url: imageUrl,
       },
       {
         onSuccess: () => router.back(),

@@ -33,6 +33,7 @@ import { Text } from '@/components/ui/text';
 import { CATEGORY_LABELS } from '@/constants/labels';
 import { useAuth } from '@/contexts/auth';
 import { useCreateProduct } from '@/features/inventory/mutations';
+import { isLocalUri, uploadProductImage } from '@/features/storage/upload';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { diffInDays, formatDate } from '@/lib/date';
 import { getTheme } from '@/lib/theme';
@@ -101,8 +102,18 @@ export default function AddProductScreen() {
     }
   }
 
-  function onSubmit(values: ProductFormData) {
+  async function onSubmit(values: ProductFormData) {
     if (!user) return;
+
+    let imageUrl = values.image_url ?? null;
+    if (imageUrl && isLocalUri(imageUrl)) {
+      try {
+        imageUrl = await uploadProductImage(imageUrl, user.id);
+      } catch {
+        imageUrl = null;
+      }
+    }
+
     createProduct(
       {
         name: values.name,
@@ -111,7 +122,7 @@ export default function AddProductScreen() {
         storage_location: values.storage_location,
         quantity: values.quantity,
         expiration_date: values.expiration_date,
-        image_url: values.image_url ?? null,
+        image_url: imageUrl,
         user_id: user.id,
       },
       {
