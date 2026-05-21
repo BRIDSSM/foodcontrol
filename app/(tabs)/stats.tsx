@@ -1,105 +1,25 @@
-import { BarChart3, CheckCircle2, Leaf, Trash2 } from 'lucide-react-native';
+import { CheckCircle2, Leaf, Trash2 } from 'lucide-react-native';
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { CategoryBar } from '@/components/stats/category-bar';
+import { MetricCard } from '@/components/stats/metric-card';
+import { StatsEmptyState } from '@/components/stats/stats-empty-state';
 import { Separator } from '@/components/ui/separator';
 import { Text } from '@/components/ui/text';
+import { PERIOD_LABELS, useStats, type Period } from '@/features/stats/queries';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { getTheme, STATUS_COLORS } from '@/lib/theme';
-import { type Period, PERIOD_LABELS, useStats, type CategoryStat } from '@/features/stats/queries';
 
 const PERIODS: Period[] = ['7d', '30d', '90d', '12m'];
-
-function MetricCard({
-  label,
-  value,
-  sub,
-  iconColor,
-  Icon,
-}: {
-  label: string;
-  value: string;
-  sub?: string;
-  iconColor: string;
-  Icon: React.ComponentType<{ size: number; color: string }>;
-}) {
-  return (
-    <View className="flex-1 gap-1.5 rounded-xl border border-border bg-card p-4">
-      <View className="flex-row items-center gap-1.5">
-        <Icon size={14} color={iconColor} />
-        <Text className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-          {label}
-        </Text>
-      </View>
-      <Text className="text-3xl font-bold" style={{ color: iconColor }}>
-        {value}
-      </Text>
-      {sub ? <Text className="text-xs text-muted-foreground">{sub}</Text> : null}
-    </View>
-  );
-}
-
-function CategoryBar({ stat, max }: { stat: CategoryStat; max: number }) {
-  const colorScheme = useColorScheme() ?? 'light';
-  const palette = STATUS_COLORS[colorScheme];
-  const consumedPct = max > 0 ? (stat.consumed / max) * 100 : 0;
-  const discardedPct = max > 0 ? (stat.discarded / max) * 100 : 0;
-
-  return (
-    <View className="gap-1">
-      <View className="flex-row items-center justify-between">
-        <Text className="text-sm" numberOfLines={1}>
-          {stat.label}
-        </Text>
-        <Text className="text-xs text-muted-foreground">{stat.total}</Text>
-      </View>
-      <View className="flex-row gap-1">
-        {stat.consumed > 0 ? (
-          <View
-            style={{
-              width: `${consumedPct}%`,
-              height: 8,
-              backgroundColor: palette.safe,
-              borderRadius: 4,
-            }}
-          />
-        ) : null}
-        {stat.discarded > 0 ? (
-          <View
-            style={{
-              width: `${discardedPct}%`,
-              height: 8,
-              backgroundColor: palette.expired,
-              borderRadius: 4,
-            }}
-          />
-        ) : null}
-      </View>
-    </View>
-  );
-}
-
-function EmptyState() {
-  const colorScheme = useColorScheme() ?? 'light';
-  const theme = getTheme(colorScheme);
-  return (
-    <View className="items-center gap-3 py-12">
-      <BarChart3 size={48} color={theme.mutedForeground} strokeWidth={1.2} />
-      <Text className="text-center text-muted-foreground">
-        Nenhum produto removido neste período.{'\n'}Registre consumos ou descartes para ver as
-        estatísticas.
-      </Text>
-    </View>
-  );
-}
 
 export default function StatsScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const theme = getTheme(colorScheme);
   const palette = STATUS_COLORS[colorScheme];
 
-  const [period, setPeriod] = useState<Period>('30d');
+  const [period, setPeriod] = useState<Period>('7d');
   const { data: stats, isLoading } = useStats(period);
 
   const maxCategoryTotal = stats ? Math.max(...stats.byCategory.map((c) => c.total), 1) : 1;
@@ -146,7 +66,7 @@ export default function StatsScreen() {
             <ActivityIndicator size="large" color={theme.primary} />
           </View>
         ) : !stats || stats.total === 0 ? (
-          <EmptyState />
+          <StatsEmptyState />
         ) : (
           <>
             {/* Taxa de aproveitamento */}

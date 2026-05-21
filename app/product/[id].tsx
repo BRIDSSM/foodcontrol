@@ -13,23 +13,16 @@ import {
 } from 'lucide-react-native';
 
 import { useState } from 'react';
-import {
-  ActivityIndicator,
-  Modal,
-  Platform,
-  Pressable,
-  ScrollView,
-  TextInput,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { ActionSheet } from '@/components/product/action-sheet';
+import { InfoRow } from '@/components/product/info-row';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Text } from '@/components/ui/text';
 import { CATEGORY_LABELS, LOCATION_LABELS } from '@/constants/labels';
-import { useRemoveProduct } from '@/features/inventory/mutations';
-import { useProduct, type Product } from '@/features/inventory/queries';
+import { useProduct } from '@/features/inventory/queries';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { formatDate, getCountdownLabel } from '@/lib/date';
 import { getStatus, type ProductStatus } from '@/lib/status';
@@ -50,112 +43,6 @@ const STATUS_LABEL: Record<ProductStatus, string> = {
   warning: 'A vencer',
   expired: 'Vencido',
 };
-
-function InfoRow({ label, value, icon }: { label: string; value: string; icon?: React.ReactNode }) {
-  return (
-    <View className="gap-0.5">
-      <Text className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-        {label}
-      </Text>
-      <View className="flex-row items-center gap-1.5">
-        {icon}
-        <Text className="text-base font-medium">{value}</Text>
-      </View>
-    </View>
-  );
-}
-
-type ActionSheetProps = {
-  product: Product;
-  destination: 'consumido' | 'descartado';
-  visible: boolean;
-  onClose: () => void;
-};
-
-function ActionSheet({ product, destination, visible, onClose }: ActionSheetProps) {
-  const colorScheme = useColorScheme() ?? 'light';
-  const theme = getTheme(colorScheme);
-  const palette = STATUS_COLORS[colorScheme];
-  const { mutate: removeProduct, isPending } = useRemoveProduct();
-
-  const [quantityText, setQuantityText] = useState(String(product.quantity));
-
-  const qty = parseFloat(quantityText.replace(',', '.'));
-  const valid = !isNaN(qty) && qty > 0;
-
-  const isConsume = destination === 'consumido';
-  const accentColor = isConsume ? palette.safe : palette.expired;
-  const Icon = isConsume ? CheckCircle2 : Trash2;
-  const title = isConsume ? 'Consumir produto' : 'Descartar produto';
-  const confirmLabel = isConsume ? 'Registrar consumo' : 'Registrar descarte';
-
-  function handleConfirm() {
-    if (!valid) return;
-    removeProduct(
-      { product, quantity_removed: qty, destination },
-      {
-        onSuccess: () => {
-          onClose();
-          if (qty >= product.quantity) router.back();
-        },
-      },
-    );
-  }
-
-  return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable className="flex-1 justify-end bg-black/50" onPress={onClose}>
-        <Pressable onPress={() => {}}>
-          <View style={{ backgroundColor: theme.card }} className="rounded-t-2xl px-5 pb-10 pt-4">
-            {/* Handle */}
-            <View className="mb-5 items-center">
-              <View className="h-1 w-10 rounded-full bg-muted-foreground/30" />
-            </View>
-
-            {/* Título com ícone */}
-            <View className="mb-1 flex-row items-center gap-2">
-              <Icon size={20} color={accentColor} />
-              <Text className="text-lg font-bold">{title}</Text>
-            </View>
-            <Text className="mb-6 text-sm text-muted-foreground" numberOfLines={1}>
-              {product.name}
-            </Text>
-
-            {/* Quantidade */}
-            <Text className="mb-1.5 text-sm font-medium">Quantidade</Text>
-            <TextInput
-              value={quantityText}
-              onChangeText={setQuantityText}
-              keyboardType="decimal-pad"
-              autoFocus
-              style={{
-                borderWidth: 1,
-                borderColor: theme.border,
-                borderRadius: 8,
-                paddingHorizontal: 12,
-                paddingVertical: Platform.OS === 'ios' ? 10 : 8,
-                fontSize: 16,
-                color: theme.foreground,
-                backgroundColor: theme.background,
-                marginBottom: 24,
-              }}
-            />
-
-            <Button
-              className="w-full"
-              accessibilityLabel={confirmLabel}
-              disabled={!valid || isPending}
-              onPress={handleConfirm}
-              variant={isConsume ? 'default' : 'destructive'}
-            >
-              <Text>{isPending ? 'Salvando…' : confirmLabel}</Text>
-            </Button>
-          </View>
-        </Pressable>
-      </Pressable>
-    </Modal>
-  );
-}
 
 export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -309,7 +196,7 @@ export default function ProductDetailScreen() {
           onPress={() => setAction('consumido')}
         >
           <CheckCircle2 size={14} color={theme.primaryForeground} />
-          <Text>Consumir</Text>
+          <Text>Consumido</Text>
         </Button>
 
         <Button
@@ -319,7 +206,7 @@ export default function ProductDetailScreen() {
           onPress={() => setAction('descartado')}
         >
           <Trash2 size={14} color={theme.destructiveForeground} />
-          <Text>Descartar</Text>
+          <Text>Descartado</Text>
         </Button>
       </View>
 

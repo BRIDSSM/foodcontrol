@@ -13,12 +13,14 @@ import { ActivityIndicator, FlatList, Pressable, ScrollView, TextInput, View } f
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ProductCard } from '@/components/product/product-card';
+import { StatusChip } from '@/components/product/status-chip';
 import { Text } from '@/components/ui/text';
 import { useAuth } from '@/contexts/auth';
 import { useProducts } from '@/features/inventory/queries';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { getStatus, type ProductStatus } from '@/lib/status';
-import { getTheme, STATUS_COLORS } from '@/lib/theme';
+import { getTheme } from '@/lib/theme';
+import { getFirstName } from '@/lib/utils';
 import type { Enums } from '@/types/database';
 
 type LocationFilter = Enums<'storage_location'> | 'todos';
@@ -35,42 +37,6 @@ const LOCATION_CHIPS: ChipDef[] = [
   { key: 'geladeira', label: 'Geladeira', Icon: Refrigerator },
   { key: 'congelador', label: 'Congelador', Icon: Snowflake },
 ];
-
-type StatusType = 'safe' | 'warning' | 'expired';
-
-function StatusChip({
-  label,
-  count,
-  status,
-}: {
-  label: string;
-  count: number;
-  status: StatusType;
-}) {
-  const colorScheme = useColorScheme() ?? 'light';
-  const palette = STATUS_COLORS[colorScheme];
-  const colorMap = {
-    safe: { text: palette.safe, bg: palette.safeBg },
-    warning: { text: palette.warning, bg: palette.warningBg },
-    expired: { text: palette.expired, bg: palette.expiredBg },
-  };
-  const { text, bg } = colorMap[status];
-
-  return (
-    <View className="flex-1 items-center rounded-xl py-3" style={{ backgroundColor: bg }}>
-      <Text className="text-xl font-bold" style={{ color: text }}>
-        {count}
-      </Text>
-      <Text className="text-xs text-muted-foreground">{label}</Text>
-    </View>
-  );
-}
-
-function getFirstName(user: { user_metadata?: { full_name?: string } } | null): string {
-  const full = user?.user_metadata?.full_name;
-  if (!full) return '';
-  return full.split(' ')[0];
-}
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme() ?? 'light';
