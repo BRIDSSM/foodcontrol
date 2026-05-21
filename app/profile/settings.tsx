@@ -2,10 +2,13 @@ import { Bell, Clock } from 'lucide-react-native';
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Switch, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as Notifications from 'expo-notifications';
 
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
+import { useAuth } from '@/contexts/auth';
+import { rescheduleAllNotifications } from '@/features/notifications/scheduler';
 import { useProfile, useUpdateProfile } from '@/features/profile/queries';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { getTheme } from '@/lib/theme';
@@ -17,6 +20,7 @@ export default function SettingsScreen() {
   const theme = getTheme(colorScheme);
   const insets = useSafeAreaInsets();
 
+  const { user } = useAuth();
   const { data: profile, isLoading } = useProfile();
   const { mutate: updateProfile, isPending } = useUpdateProfile();
 
@@ -32,10 +36,19 @@ export default function SettingsScreen() {
   }, [profile]);
 
   function save() {
-    updateProfile({
-      warning_days_before_expiry: warningDays,
-      notifications_enabled: notificationsEnabled,
-    });
+    updateProfile(
+      { warning_days_before_expiry: warningDays, notifications_enabled: notificationsEnabled },
+      {
+        onSuccess: () => {
+          if (!user) return;
+          if (notificationsEnabled) {
+            rescheduleAllNotifications(user.id, warningDays).catch(() => {});
+          } else {
+            Notifications.cancelAllScheduledNotificationsAsync().catch(() => {});
+          }
+        },
+      },
+    );
   }
 
   if (isLoading) {

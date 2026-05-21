@@ -45,6 +45,15 @@
           "cameraPermission": "Permitir $(PRODUCT_NAME) acessar a câmera para escanear códigos de barras.",
           "recordAudioAndroid": false
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "color": "#16a34a",
+          "defaultChannel": "default",
+          "sounds": []
+        }
       ]
     ],
     "experiments": {

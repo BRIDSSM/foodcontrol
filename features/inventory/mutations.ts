@@ -1,8 +1,19 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { getStatus } from '@/lib/status';
-import type { TablesInsert, TablesUpdate } from '@/types/database';
+import type { Tables, TablesInsert, TablesUpdate } from '@/types/database';
+import {
+  cancelProductNotifications,
+  scheduleProductNotifications,
+} from '@/features/notifications/scheduler';
 import { inventoryKeys, type Product } from './queries';
+
+function getProfileFromCache(
+  qc: ReturnType<typeof useQueryClient>,
+  userId: string,
+): Tables<'profiles'> | undefined {
+  return qc.getQueryData<Tables<'profiles'>>(['profile', userId]);
+}
 
 export function useCreateProduct() {
   const qc = useQueryClient();
@@ -12,7 +23,13 @@ export function useCreateProduct() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: inventoryKeys.all }),
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: inventoryKeys.all });
+      const profile = getProfileFromCache(qc, data.user_id);
+      if (profile?.notifications_enabled) {
+        scheduleProductNotifications(data, profile.warning_days_before_expiry).catch(() => {});
+      }
+    },
   });
 }
 
@@ -32,6 +49,12 @@ export function useUpdateProduct() {
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: inventoryKeys.all });
       qc.invalidateQueries({ queryKey: inventoryKeys.detail(data.id) });
+      const profile = getProfileFromCache(qc, data.user_id);
+      if (profile?.notifications_enabled) {
+        scheduleProductNotifications(data, profile.warning_days_before_expiry).catch(() => {});
+      } else {
+        cancelProductNotifications(data.id).catch(() => {});
+      }
     },
   });
 }
@@ -75,9 +98,10 @@ export function useRemoveProduct() {
         if (error) throw error;
       }
     },
-    onSuccess: () => {
+    onSuccess: (_, { product }) => {
       qc.invalidateQueries({ queryKey: inventoryKeys.all });
       qc.invalidateQueries({ queryKey: ['stats'] });
+      cancelProductNotifications(product.id).catch(() => {});
     },
   });
 }
