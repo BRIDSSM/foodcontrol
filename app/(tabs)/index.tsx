@@ -73,8 +73,8 @@ export default function HomeScreen() {
   const ListHeader = (
     <View>
       {/* Header */}
-      <View className="px-4 pb-3 pt-5">
-        <Text variant="h2">{firstName ? `Olá, ${firstName}!` : 'Olá!'}</Text>
+      <View className="px-4 pb-3 pt-4">
+        <Text className="text-2xl font-bold">{firstName ? `Olá, ${firstName}!` : 'Olá!'}</Text>
         <Text variant="muted">
           {products.length === 0
             ? 'Seu estoque está vazio'
@@ -90,7 +90,7 @@ export default function HomeScreen() {
       </View>
 
       {/* Search */}
-      <View className="mx-4 mb-3 flex-row items-center gap-2 rounded-xl border border-input bg-muted px-3 py-2.5">
+      <View className="mx-4 mb-3 flex-row items-center gap-2 rounded-xl border border-input bg-muted px-3 py-1.5">
         <Search size={16} color={theme.mutedForeground} />
         <TextInput
           className="flex-1 text-sm text-foreground"
@@ -150,7 +150,11 @@ export default function HomeScreen() {
       <FlatList
         data={filtered}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <ProductCard product={item} />}
+        renderItem={({ item }) => (
+          <View className="px-4">
+            <ProductCard product={item} />
+          </View>
+        )}
         ListHeaderComponent={ListHeader}
         ListEmptyComponent={
           <View className="items-center gap-4 px-8 py-20">
@@ -177,7 +181,6 @@ export default function HomeScreen() {
         ItemSeparatorComponent={() => <View className="h-2" />}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
-        className="px-4"
       />
 
       {/* FAB */}
