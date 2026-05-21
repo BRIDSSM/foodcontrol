@@ -9,6 +9,8 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 
+import Constants from 'expo-constants';
+
 import { AuthProvider, useAuth } from '@/contexts/auth';
 import {
   requestNotificationPermissions,
@@ -17,15 +19,19 @@ import {
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { NAV_THEME } from '@/lib/theme';
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
-});
+const isExpoGo = Constants.appOwnership === 'expo';
+
+if (!isExpoGo) {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldShowBanner: true,
+      shouldShowList: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+    }),
+  });
+}
 
 const queryClient = new QueryClient();
 
@@ -50,7 +56,7 @@ function AuthGuard() {
   }, [isSignedIn, isLoading, segments, mounted]);
 
   useEffect(() => {
-    if (!isSignedIn) return;
+    if (!isSignedIn || isExpoGo) return;
     setupNotificationChannel()
       .then(() => requestNotificationPermissions())
       .catch(() => {});
