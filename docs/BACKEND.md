@@ -221,10 +221,56 @@ mapCosmosToCategory(null); // → 'outros' ← fallback
 
 O formulário de cadastro permite adicionar uma imagem de duas formas:
 
-1. **Via scanner** — quando a Cosmos retorna um `thumbnail`, ele é salvo no `image_url` do formulário automaticamente ao retornar da tela de scan.
-2. **Via galeria** — o campo de imagem no topo do formulário usa `expo-image-picker` para abrir a galeria. A imagem é recortada em quadrado (1:1, qualidade 0.8) e salva como URI local no campo `image_url`.
+1. **Via scanner** — quando a Cosmos retorna um `thumbnail`, a URL já é remota e é salva diretamente no banco.
+2. **Via galeria** — `expo-image-picker` abre a galeria; a imagem é recortada em quadrado (1:1, qualidade 0.8) e retorna como URI local (`file://…`).
 
-> Por enquanto o `image_url` salvo no banco é a URI local ou a URL da Cosmos. Upload para o Supabase Storage (`product-images/`) está planejado para a fase 3.
+### Upload para Supabase Storage
+
+Toda URI local é enviada para o bucket `product-images` antes de salvar o produto. A lógica fica em `features/storage/upload.ts`:
+
+```ts
+import { isLocalUri, uploadProductImage } from '@/features/storage/upload';
+
+// No onSubmit de new.tsx e edit/[id].tsx:
+let imageUrl = values.image_url ?? null;
+if (imageUrl && isLocalUri(imageUrl)) {
+  try {
+    imageUrl = await uploadProductImage(imageUrl, user.id);
+  } catch {
+    imageUrl = null; // fallback: salva sem imagem
+  }
+}
+```
+
+**`isLocalUri(uri)`** — retorna `true` para `file://`, `content://` ou qualquer URI que não começa com `http`. Protege contra re-upload de URLs remotas (Cosmos ou URLs já armazenadas).
+
+**`uploadProductImage(localUri, userId)`** — lê o arquivo como base64 via `expo-file-system/legacy` (a importação `/legacy` é necessária para acessar `EncodingType` no Expo SDK 54), decodifica com `base64-arraybuffer` e faz upload:
+
+```
+path no bucket: {userId}/{Date.now()}.{ext}
+contentType:    image/jpeg | image/png | image/webp
+```
+
+Retorna a `publicUrl` do Supabase, que é salva em `products.image_url`.
+
+**`deleteProductImage(publicUrl)`** — extrai o path a partir da URL pública e remove o arquivo do bucket. Chamado na deleção de produto quando há imagem.
+
+### RLS do bucket
+
+```sql
+-- Apenas o dono da pasta pode fazer upload
+create policy "Users upload own images"
+  on storage.objects for insert
+  with check (
+    bucket_id = 'product-images'
+    and auth.uid()::text = (storage.foldername(name))[1]
+  );
+
+-- Leitura pública (URLs públicas funcionam sem autenticação)
+create policy "Public read product images"
+  on storage.objects for select
+  using (bucket_id = 'product-images');
+```
 
 ---
 
@@ -243,6 +289,74 @@ O perfil fica na tabela `profiles` (1:1 com `auth.users`). O hook `useProfile()`
 ### Tela de configurações
 
 Permite alterar `warning_days_before_expiry` (chips: 3/5/7/10/14/30 dias) e `notifications_enabled` (toggle). O botão "Salvar" só fica habilitado quando há alteração não salva em relação ao valor atual do banco.
+
+---
+
+## 8. Notificações locais
+
+As notificações são 100% locais via `expo-notifications` — sem servidor, sem custo. Funcionam apenas em **development builds** e builds de produção; no Expo Go (SDK 53+) o módulo não está disponível.
+
+### Guarda de ambiente
+
+```ts
+// app/_layout.tsx
+import Constants from 'expo-constants';
+const isExpoGo = Constants.appOwnership === 'expo';
+
+if (!isExpoGo) {
+  Notifications.setNotificationHandler({ ... });
+}
+// No useEffect de AuthGuard:
+if (!isSignedIn || isExpoGo) return;
+setupNotificationChannel()
+  .then(() => requestNotificationPermissions())
+  .catch(() => {});
+```
+
+### Quando notificações são agendadas
+
+| Evento                                | Ação                                                                        |
+| ------------------------------------- | --------------------------------------------------------------------------- |
+| Produto criado                        | `scheduleProductNotifications(product, warningDays)`                        |
+| Produto editado                       | `scheduleProductNotifications(product, warningDays)` (substitui anteriores) |
+| Produto removido                      | `cancelProductNotifications(product.id)`                                    |
+| `warning_days_before_expiry` alterado | `rescheduleAllNotifications(userId, warningDays)`                           |
+| Notificações desabilitadas            | `Notifications.cancelAllScheduledNotificationsAsync()`                      |
+
+### Triggers por produto
+
+Para cada produto, até 3 notificações são agendadas às **09:00**:
+
+| Kind      | Quando dispara                                       | Exemplo de body         |
+| --------- | ---------------------------------------------------- | ----------------------- |
+| `warning` | Dia em que entra na janela amarela (D - warningDays) | "Leite vence em 5 dias" |
+| `expiry`  | Dia do vencimento                                    | "Leite vence hoje"      |
+| `expired` | 1 dia após o vencimento                              | "Leite venceu ontem"    |
+
+Triggers com data no passado são descartados silenciosamente (não são agendados).
+
+### Limite do iOS
+
+O iOS permite no máximo **64 notificações pendentes**. O scheduler respeita esse limite capturando no máximo **20 produtos** × 3 triggers = 60 agendamentos. Em `rescheduleAllNotifications`, os produtos são ordenados por `expiration_date asc` (mais urgentes primeiro) antes do corte.
+
+### Identificadores
+
+```ts
+identifier: `${product.id}-warning`;
+identifier: `${product.id}-expiry`;
+identifier: `${product.id}-expired`;
+```
+
+O identificador único por produto+tipo permite cancelar e re-agendar sem duplicar notificações.
+
+### Onde fica o código
+
+```
+features/notifications/
+  permissions.ts   — setupNotificationChannel(), requestNotificationPermissions()
+  scheduler.ts     — scheduleProductNotifications(), cancelProductNotifications(),
+                     rescheduleAllNotifications()
+```
 
 ---
 

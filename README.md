@@ -107,8 +107,8 @@ Status **nunca é persistido** — calculado em tempo real no cliente.
 ## Roadmap
 
 - **Fase 1 — MVP ✅:** Auth + CRUD de produtos + lista com semáforo + remoção com histórico
-- **Fase 2 — Inteligência (parcial ✅):** Scanner de barcode + imagem no formulário + estatísticas com filtro de período + perfil com configurações ✅ | Notificações locais (pendente)
-- **Fase 3 — UX premium:** Upload de imagem para Supabase Storage + busca avançada
+- **Fase 2 — Inteligência ✅:** Scanner de barcode + imagem no formulário + upload Supabase Storage + estatísticas com filtro de período + perfil com configurações + notificações locais
+- **Fase 3 — UX premium:** Busca avançada + ordenação customizada
 - **Fase 4 — Polimento:** Onboarding + animações + testes
 
 ---
