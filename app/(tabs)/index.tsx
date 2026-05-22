@@ -4,6 +4,8 @@ import {
   Plus,
   Refrigerator,
   Search,
+  SearchX,
+  ShoppingCart,
   SlidersHorizontal,
   Snowflake,
 } from 'lucide-react-native';
@@ -352,12 +354,14 @@ export default function HomeScreen() {
               source={require('@/assets/animations/no-results.json')}
               title="Nenhum resultado"
               description="Tente outro filtro ou busca"
+              FallbackIcon={SearchX}
             />
           ) : (
             <LottieEmptyState
               source={require('@/assets/animations/empty-inventory.json')}
               title="Estoque vazio"
               description={`Adicione produtos para começar a\nmonitorar a validade`}
+              FallbackIcon={ShoppingCart}
             />
           )
         }

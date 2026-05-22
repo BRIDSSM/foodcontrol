@@ -46,6 +46,10 @@ function AuthGuard() {
 
   useEffect(() => {
     setMounted(true);
+    if (isExpoGo) {
+      setHasSeenOnboarding(true);
+      return;
+    }
     SecureStore.getItemAsync(ONBOARDING_KEY).then((val) => {
       setHasSeenOnboarding(val === 'true');
     });
