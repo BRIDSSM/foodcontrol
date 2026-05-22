@@ -4,8 +4,6 @@ import {
   Plus,
   Refrigerator,
   Search,
-  SearchX,
-  ShoppingCart,
   SlidersHorizontal,
   Snowflake,
 } from 'lucide-react-native';
@@ -24,8 +22,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ProductCard } from '@/components/product/product-card';
 import { StatusChip } from '@/components/product/status-chip';
-import { LottieEmptyState } from '@/components/ui/lottie-empty-state';
+import { EmptyState } from '@/components/ui/empty-state';
 import { Text } from '@/components/ui/text';
+import EmptyInventoryIllustration from '@/assets/illustrations/empty-inventory.svg';
+import NoResultsIllustration from '@/assets/illustrations/no-results.svg';
 import { CATEGORY_LABELS } from '@/constants/labels';
 import { useAuth } from '@/contexts/auth';
 import { useProducts } from '@/features/inventory/queries';
@@ -350,18 +350,16 @@ export default function HomeScreen() {
         ListHeaderComponent={ListHeader}
         ListEmptyComponent={
           search || hasActiveFilter ? (
-            <LottieEmptyState
-              source={require('@/assets/animations/no-results.json')}
+            <EmptyState
+              Illustration={NoResultsIllustration}
               title="Nenhum resultado"
               description="Tente outro filtro ou busca"
-              FallbackIcon={SearchX}
             />
           ) : (
-            <LottieEmptyState
-              source={require('@/assets/animations/empty-inventory.json')}
+            <EmptyState
+              Illustration={EmptyInventoryIllustration}
               title="Estoque vazio"
               description={`Adicione produtos para começar a\nmonitorar a validade`}
-              FallbackIcon={ShoppingCart}
             />
           )
         }

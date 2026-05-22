@@ -1,15 +1,14 @@
 import { router } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { BarChart3, Bell, PackageSearch } from 'lucide-react-native';
-import LottieView from 'lottie-react-native';
 import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { isExpoGo } from '@/lib/platform';
 import { getTheme } from '@/lib/theme';
+import OnboardingIllustration from '@/assets/illustrations/onboarding.svg';
 
 export const ONBOARDING_KEY = 'onboarding_complete';
 
@@ -39,14 +38,7 @@ export default function OnboardingScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
       <View className="flex-1 items-center justify-center gap-6 px-8">
-        {!isExpoGo && (
-          <LottieView
-            source={require('@/assets/animations/onboarding.json')}
-            autoPlay
-            loop
-            style={{ width: 280, height: 280 }}
-          />
-        )}
+        <OnboardingIllustration width={280} height={280} />
 
         <View className="items-center gap-2">
           <Text className="text-center text-3xl font-bold">FoodControl</Text>

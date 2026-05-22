@@ -1,14 +1,12 @@
-import { BarChart3 } from 'lucide-react-native';
-
-import { LottieEmptyState } from '@/components/ui/lottie-empty-state';
+import { EmptyState } from '@/components/ui/empty-state';
+import EmptyStatsIllustration from '@/assets/illustrations/empty-stats.svg';
 
 export function StatsEmptyState() {
   return (
-    <LottieEmptyState
-      source={require('@/assets/animations/empty-stats.json')}
+    <EmptyState
+      Illustration={EmptyStatsIllustration}
       title="Nenhum dado ainda"
       description={`Registre consumos ou descartes\npara ver as estatísticas.`}
-      FallbackIcon={BarChart3}
     />
   );
 }
