@@ -1,22 +1,22 @@
 import '@/global.css';
 
-import { PortalHost } from '@rn-primitives/portal';
 import { ThemeProvider } from '@react-navigation/native';
+import { PortalHost } from '@rn-primitives/portal';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import * as Notifications from 'expo-notifications';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import * as Notifications from 'expo-notifications';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import 'react-native-reanimated';
 
 import * as SecureStore from 'expo-secure-store';
 
-import { AuthProvider, useAuth } from '@/contexts/auth';
 import { ONBOARDING_KEY } from '@/app/onboarding';
+import { AuthProvider, useAuth } from '@/contexts/auth';
 import {
-  setupNotificationChannel,
   requestNotificationPermissions,
+  setupNotificationChannel,
 } from '@/features/notifications/permissions';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { getTheme, NAV_THEME } from '@/lib/theme';
@@ -88,7 +88,7 @@ export default function RootLayout() {
           <View style={{ flex: 1, backgroundColor: theme.background }}>
             <Stack
               screenOptions={{
-                animation: 'slide_from_right',
+                animation: 'fade',
                 contentStyle: { backgroundColor: theme.background },
               }}
             >
