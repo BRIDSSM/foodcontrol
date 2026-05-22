@@ -29,6 +29,7 @@ Cadastro de produtos com data de validade (manual ou via código de barras), cla
 | Notificações   | expo-notifications (locais)                           |
 | Câmera/Barcode | expo-camera + expo-image-picker                       |
 | Imagens        | expo-image (exibição), expo-image-picker (galeria)    |
+| Animações      | lottie-react-native + react-native-reanimated         |
 | API externa    | Cosmos by Bluesoft (lookup GTIN/EAN)                  |
 
 ---
@@ -79,7 +80,7 @@ components/
   ui/                   # Botões, inputs, cards
   product/              # ProductCard, StatusBadge, CountdownLabel
   forms/                # ProductForm, RemoveProductSheet
-lib/                    # supabase, status, date utils, notifications
+lib/                    # supabase, status, date utils, platform (Expo Go detect)
 services/               # cosmos.ts (API Bluesoft)
 features/               # inventory, auth, stats, notifications
 schemas/                # Zod schemas compartilhados
@@ -108,8 +109,9 @@ Status **nunca é persistido** — calculado em tempo real no cliente.
 
 - **Fase 1 — MVP ✅:** Auth + CRUD de produtos + lista com semáforo + remoção com histórico
 - **Fase 2 — Inteligência ✅:** Scanner de barcode + imagem no formulário + upload Supabase Storage + estatísticas com filtro de período + perfil com configurações + notificações locais
-- **Fase 3 — UX premium:** Busca avançada + ordenação customizada
-- **Fase 4 — Polimento:** Onboarding + animações + testes
+- **Fase 3 — UX premium ✅:** Busca + filtros por local/categoria + ordenação customizada
+- **Fase 4 — Polimento ✅:** Onboarding + animações Lottie + Reanimated + transições de tela
+- **Fase 5 — Qualidade:** Testes unitários (`lib/status.ts`, `lib/date.ts`) + substituir animações placeholder por Lottie reais
 
 ---
 
