@@ -58,7 +58,7 @@ export default function StatsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
       <ScrollView
-        contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 40 }}
+        contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 40, flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}

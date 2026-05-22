@@ -363,7 +363,7 @@ export default function HomeScreen() {
             />
           )
         }
-        contentContainerStyle={{ paddingBottom: 100 }}
+        contentContainerStyle={{ paddingBottom: 100, flexGrow: 1 }}
         ItemSeparatorComponent={() => <View className="h-2" />}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
