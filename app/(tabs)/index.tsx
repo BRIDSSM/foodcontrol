@@ -37,6 +37,14 @@ import type { Enums } from '@/types/database';
 
 type LocationFilter = Enums<'storage_location'> | 'todos';
 type CategoryFilter = Enums<'product_category'> | 'todas';
+type SortOrder = 'expiry_asc' | 'expiry_desc' | 'name_asc' | 'name_desc';
+
+const SORT_OPTIONS: { key: SortOrder; label: string }[] = [
+  { key: 'expiry_asc', label: 'Vencimento (mais próximo)' },
+  { key: 'expiry_desc', label: 'Vencimento (mais distante)' },
+  { key: 'name_asc', label: 'Nome (A → Z)' },
+  { key: 'name_desc', label: 'Nome (Z → A)' },
+];
 
 type ChipDef = {
   key: LocationFilter;
@@ -59,6 +67,7 @@ export default function HomeScreen() {
   const [search, setSearch] = useState('');
   const [locationFilter, setLocationFilter] = useState<LocationFilter>('todos');
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('todas');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('expiry_asc');
   const [showFilterModal, setShowFilterModal] = useState(false);
 
   const { data: products = [], isLoading, refetch } = useProducts();
@@ -70,13 +79,26 @@ export default function HomeScreen() {
   );
 
   const filtered = useMemo(() => {
-    return products.filter((p) => {
+    const result = products.filter((p) => {
       const matchesLocation = locationFilter === 'todos' || p.storage_location === locationFilter;
       const matchesCategory = categoryFilter === 'todas' || p.category === categoryFilter;
       const matchesSearch = !search || p.name.toLowerCase().includes(search.toLowerCase());
       return matchesLocation && matchesCategory && matchesSearch;
     });
-  }, [products, locationFilter, categoryFilter, search]);
+
+    return result.sort((a, b) => {
+      switch (sortOrder) {
+        case 'expiry_asc':
+          return a.expiration_date.localeCompare(b.expiration_date);
+        case 'expiry_desc':
+          return b.expiration_date.localeCompare(a.expiration_date);
+        case 'name_asc':
+          return a.name.localeCompare(b.name, 'pt-BR');
+        case 'name_desc':
+          return b.name.localeCompare(a.name, 'pt-BR');
+      }
+    });
+  }, [products, locationFilter, categoryFilter, sortOrder, search]);
 
   const counts = useMemo(() => {
     const result: Record<ProductStatus, number> = { safe: 0, warning: 0, expired: 0 };
@@ -84,7 +106,8 @@ export default function HomeScreen() {
     return result;
   }, [products]);
 
-  const hasActiveFilter = locationFilter !== 'todos' || categoryFilter !== 'todas';
+  const hasActiveFilter =
+    locationFilter !== 'todos' || categoryFilter !== 'todas' || sortOrder !== 'expiry_asc';
   const firstName = getFirstName(user);
 
   const ListHeader = (
@@ -195,6 +218,7 @@ export default function HomeScreen() {
                   onPress={() => {
                     setLocationFilter('todos');
                     setCategoryFilter('todas');
+                    setSortOrder('expiry_asc');
                     setShowFilterModal(false);
                   }}
                   accessibilityLabel="Limpar filtros"
@@ -219,7 +243,10 @@ export default function HomeScreen() {
                 return (
                   <Pressable
                     key={key}
-                    onPress={() => setLocationFilter(key)}
+                    onPress={() => {
+                      setLocationFilter(key);
+                      setShowFilterModal(false);
+                    }}
                     accessibilityLabel={label}
                     className="flex-row items-center gap-1.5 rounded-full border px-3 py-1.5"
                     style={{
@@ -239,13 +266,37 @@ export default function HomeScreen() {
               })}
             </ScrollView>
 
-            {/* Category section */}
+            {/* Sort section */}
             <Text className="px-4 pb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Ordenar por
+            </Text>
+            {SORT_OPTIONS.map(({ key, label }) => (
+              <TouchableOpacity
+                key={key}
+                onPress={() => {
+                  setSortOrder(key);
+                  setShowFilterModal(false);
+                }}
+                className="flex-row items-center justify-between px-4 py-3"
+                accessibilityLabel={label}
+              >
+                <Text className={key === sortOrder ? 'font-semibold text-primary' : ''}>
+                  {label}
+                </Text>
+                {key === sortOrder && <View className="h-2 w-2 rounded-full bg-primary" />}
+              </TouchableOpacity>
+            ))}
+
+            {/* Category section */}
+            <Text className="px-4 pb-2 pt-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Categoria
             </Text>
-            <ScrollView style={{ maxHeight: 260 }} showsVerticalScrollIndicator={false}>
+            <ScrollView style={{ maxHeight: 180 }} showsVerticalScrollIndicator={false}>
               <TouchableOpacity
-                onPress={() => setCategoryFilter('todas')}
+                onPress={() => {
+                  setCategoryFilter('todas');
+                  setShowFilterModal(false);
+                }}
                 className="flex-row items-center justify-between px-4 py-3"
                 accessibilityLabel="Todas as categorias"
               >
@@ -257,7 +308,10 @@ export default function HomeScreen() {
               {CATEGORIES.map((cat) => (
                 <TouchableOpacity
                   key={cat}
-                  onPress={() => setCategoryFilter(cat)}
+                  onPress={() => {
+                    setCategoryFilter(cat);
+                    setShowFilterModal(false);
+                  }}
                   className="flex-row items-center justify-between px-4 py-3"
                   accessibilityLabel={CATEGORY_LABELS[cat]}
                 >
