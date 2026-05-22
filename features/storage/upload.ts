@@ -9,6 +9,17 @@ export function isLocalUri(uri: string): boolean {
   return uri.startsWith('file://') || uri.startsWith('content://') || !uri.startsWith('http');
 }
 
+export function isSupabaseStorageUrl(uri: string): boolean {
+  const base = process.env.EXPO_PUBLIC_SUPABASE_URL ?? '';
+  return uri.startsWith(base);
+}
+
+function extFromUrl(url: string): string {
+  const clean = url.split('?')[0].split('#')[0];
+  const ext = clean.split('.').pop()?.toLowerCase() ?? '';
+  return ['jpg', 'jpeg', 'png', 'webp'].includes(ext) ? ext : 'jpg';
+}
+
 export async function uploadProductImage(localUri: string, userId: string): Promise<string> {
   const ext = localUri.split('.').pop()?.toLowerCase() ?? 'jpg';
   const safeExt = ['jpg', 'jpeg', 'png', 'webp'].includes(ext) ? ext : 'jpg';
@@ -30,6 +41,17 @@ export async function uploadProductImage(localUri: string, userId: string): Prom
   } = supabase.storage.from(BUCKET).getPublicUrl(data.path);
 
   return publicUrl;
+}
+
+export async function downloadAndUploadImage(remoteUrl: string, userId: string): Promise<string> {
+  const ext = extFromUrl(remoteUrl);
+  const localPath = `${FileSystem.cacheDirectory}tmp_${Date.now()}.${ext}`;
+  const { uri } = await FileSystem.downloadAsync(remoteUrl, localPath);
+  try {
+    return await uploadProductImage(uri, userId);
+  } finally {
+    await FileSystem.deleteAsync(uri, { idempotent: true });
+  }
 }
 
 export async function deleteProductImage(publicUrl: string): Promise<void> {

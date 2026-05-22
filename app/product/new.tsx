@@ -33,7 +33,12 @@ import { Text } from '@/components/ui/text';
 import { CATEGORY_LABELS } from '@/constants/labels';
 import { useAuth } from '@/contexts/auth';
 import { useCreateProduct } from '@/features/inventory/mutations';
-import { isLocalUri, uploadProductImage } from '@/features/storage/upload';
+import {
+  downloadAndUploadImage,
+  isLocalUri,
+  isSupabaseStorageUrl,
+  uploadProductImage,
+} from '@/features/storage/upload';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { diffInDays, formatDate } from '@/lib/date';
 import { getTheme } from '@/lib/theme';
@@ -106,11 +111,13 @@ export default function AddProductScreen() {
     if (!user) return;
 
     let imageUrl = values.image_url ?? null;
-    if (imageUrl && isLocalUri(imageUrl)) {
+    if (imageUrl && !isSupabaseStorageUrl(imageUrl)) {
       try {
-        imageUrl = await uploadProductImage(imageUrl, user.id);
+        imageUrl = isLocalUri(imageUrl)
+          ? await uploadProductImage(imageUrl, user.id)
+          : await downloadAndUploadImage(imageUrl, user.id);
       } catch {
-        imageUrl = null;
+        imageUrl = isLocalUri(imageUrl) ? null : imageUrl;
       }
     }
 

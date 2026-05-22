@@ -34,7 +34,12 @@ import { Text } from '@/components/ui/text';
 import { CATEGORY_LABELS } from '@/constants/labels';
 import { useUpdateProduct } from '@/features/inventory/mutations';
 import { useProduct } from '@/features/inventory/queries';
-import { isLocalUri, uploadProductImage } from '@/features/storage/upload';
+import {
+  downloadAndUploadImage,
+  isLocalUri,
+  isSupabaseStorageUrl,
+  uploadProductImage,
+} from '@/features/storage/upload';
 import { useAuth } from '@/contexts/auth';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { diffInDays, formatDate } from '@/lib/date';
@@ -122,11 +127,13 @@ export default function EditProductScreen() {
 
   async function onSubmit(values: ProductFormData) {
     let imageUrl = values.image_url ?? null;
-    if (imageUrl && isLocalUri(imageUrl) && user) {
+    if (imageUrl && user && !isSupabaseStorageUrl(imageUrl)) {
       try {
-        imageUrl = await uploadProductImage(imageUrl, user.id);
+        imageUrl = isLocalUri(imageUrl)
+          ? await uploadProductImage(imageUrl, user.id)
+          : await downloadAndUploadImage(imageUrl, user.id);
       } catch {
-        imageUrl = null;
+        imageUrl = isLocalUri(imageUrl) ? null : imageUrl;
       }
     }
 
