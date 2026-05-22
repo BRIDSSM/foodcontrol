@@ -2,6 +2,7 @@ import { Bell, Clock } from 'lucide-react-native';
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Switch, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as Notifications from 'expo-notifications';
 
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -10,7 +11,6 @@ import { useAuth } from '@/contexts/auth';
 import { rescheduleAllNotifications } from '@/features/notifications/scheduler';
 import { useProfile, useUpdateProfile } from '@/features/profile/queries';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { isExpoGo } from '@/lib/platform';
 import { getTheme } from '@/lib/theme';
 
 const WARNING_OPTIONS = [3, 5, 7, 10, 14, 30];
@@ -40,12 +40,10 @@ export default function SettingsScreen() {
       { warning_days_before_expiry: warningDays, notifications_enabled: notificationsEnabled },
       {
         onSuccess: () => {
-          if (!user || isExpoGo) return;
+          if (!user) return;
           if (notificationsEnabled) {
             rescheduleAllNotifications(user.id, warningDays).catch(() => {});
           } else {
-            const Notifications =
-              require('expo-notifications') as typeof import('expo-notifications');
             Notifications.cancelAllScheduledNotificationsAsync().catch(() => {});
           }
         },

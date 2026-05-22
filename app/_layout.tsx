@@ -5,6 +5,7 @@ import { ThemeProvider } from '@react-navigation/native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import * as Notifications from 'expo-notifications';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import 'react-native-reanimated';
@@ -13,22 +14,21 @@ import * as SecureStore from 'expo-secure-store';
 
 import { AuthProvider, useAuth } from '@/contexts/auth';
 import { ONBOARDING_KEY } from '@/app/onboarding';
+import {
+  setupNotificationChannel,
+  requestNotificationPermissions,
+} from '@/features/notifications/permissions';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { isExpoGo } from '@/lib/platform';
 import { getTheme, NAV_THEME } from '@/lib/theme';
 
-if (!isExpoGo) {
-  const Notifications = require('expo-notifications') as typeof import('expo-notifications');
-  Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-      shouldShowAlert: true,
-      shouldShowBanner: true,
-      shouldShowList: true,
-      shouldPlaySound: true,
-      shouldSetBadge: false,
-    }),
-  });
-}
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowBanner: true,
+    shouldShowList: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
 
 const queryClient = new QueryClient();
 
@@ -41,10 +41,6 @@ function AuthGuard() {
 
   useEffect(() => {
     setMounted(true);
-    if (isExpoGo) {
-      setHasSeenOnboarding(true);
-      return;
-    }
     SecureStore.getItemAsync(ONBOARDING_KEY).then((val) => {
       setHasSeenOnboarding(val === 'true');
     });
@@ -67,9 +63,7 @@ function AuthGuard() {
   }, [isSignedIn, isLoading, segments, mounted, hasSeenOnboarding]);
 
   useEffect(() => {
-    if (!isSignedIn || isExpoGo) return;
-    const { setupNotificationChannel, requestNotificationPermissions } =
-      require('@/features/notifications/permissions') as typeof import('@/features/notifications/permissions');
+    if (!isSignedIn) return;
     setupNotificationChannel()
       .then(() => requestNotificationPermissions())
       .catch(() => {});

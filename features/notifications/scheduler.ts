@@ -1,15 +1,12 @@
 import { addDays, set, startOfDay } from 'date-fns';
+import * as Notifications from 'expo-notifications';
 
-import { isExpoGo } from '@/lib/platform';
-import { supabase } from '@/lib/supabase';
 import type { Product } from '@/features/inventory/queries';
-
-function loadNotifications(): typeof import('expo-notifications') {
-  return require('expo-notifications');
-}
+import { supabase } from '@/lib/supabase';
 
 const HOUR = 9;
-const MAX_PRODUCTS = 20; // 20 produtos × 3 triggers = 60 < limite iOS de 64
+const MINUTE = 0;
+const MAX_PRODUCTS = 20;
 
 type TriggerKind = 'warning' | 'expiry' | 'expired';
 
@@ -20,7 +17,7 @@ interface Trigger {
 }
 
 function at9(date: Date): Date {
-  return set(date, { hours: HOUR, minutes: 0, seconds: 0, milliseconds: 0 });
+  return set(date, { hours: HOUR, minutes: MINUTE, seconds: 0, milliseconds: 0 });
 }
 
 function computeTriggers(name: string, expirationDateStr: string, warningDays: number): Trigger[] {
@@ -52,11 +49,10 @@ export async function scheduleProductNotifications(
   product: Product,
   warningDays: number,
 ): Promise<void> {
-  if (isExpoGo) return;
   await cancelProductNotifications(product.id);
 
-  const Notifications = loadNotifications();
   const triggers = computeTriggers(product.name, product.expiration_date, warningDays);
+
   for (const t of triggers) {
     await Notifications.scheduleNotificationAsync({
       identifier: `${product.id}-${t.kind}`,
@@ -67,8 +63,6 @@ export async function scheduleProductNotifications(
 }
 
 export async function cancelProductNotifications(productId: string): Promise<void> {
-  if (isExpoGo) return;
-  const Notifications = loadNotifications();
   const kinds: TriggerKind[] = ['warning', 'expiry', 'expired'];
   await Promise.all(
     kinds.map((k) => Notifications.cancelScheduledNotificationAsync(`${productId}-${k}`)),
@@ -79,8 +73,6 @@ export async function rescheduleAllNotifications(
   userId: string,
   warningDays: number,
 ): Promise<void> {
-  if (isExpoGo) return;
-  const Notifications = loadNotifications();
   await Notifications.cancelAllScheduledNotificationsAsync();
 
   const { data: products, error } = await supabase
