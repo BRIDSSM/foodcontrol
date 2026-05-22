@@ -1,5 +1,6 @@
+import { useFocusEffect } from 'expo-router';
 import { CheckCircle2, Leaf, Trash2 } from 'lucide-react-native';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -20,7 +21,13 @@ export default function StatsScreen() {
   const palette = STATUS_COLORS[colorScheme];
 
   const [period, setPeriod] = useState<Period>('7d');
-  const { data: stats, isLoading } = useStats(period);
+  const { data: stats, isLoading, refetch } = useStats(period);
+
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch]),
+  );
 
   const maxCategoryTotal = stats ? Math.max(...stats.byCategory.map((c) => c.total), 1) : 1;
 
