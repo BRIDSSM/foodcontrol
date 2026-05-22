@@ -1,17 +1,24 @@
 import { differenceInDays, format, startOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
+/**
+ * Converte string YYYY-MM-DD para um Date representando o início
+ * do dia em hora local, usando T12:00:00 para evitar bugs de timezone
+ * que atravessam a meia-noite.
+ */
+function parseDate(date: Date | string): Date {
+  if (date instanceof Date) return date;
+  return new Date(date + 'T12:00:00');
+}
+
 export function diffInDays(expirationDate: Date | string): number {
   const today = startOfDay(new Date());
-  const exp = startOfDay(
-    typeof expirationDate === 'string' ? new Date(expirationDate) : expirationDate,
-  );
+  const exp = startOfDay(parseDate(expirationDate));
   return differenceInDays(exp, today);
 }
 
 export function formatDate(date: Date | string): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return format(d, 'dd/MM/yyyy', { locale: ptBR });
+  return format(parseDate(date), 'dd/MM/yyyy', { locale: ptBR });
 }
 
 export function getCountdownLabel(expirationDate: Date | string): string {

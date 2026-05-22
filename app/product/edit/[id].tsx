@@ -443,14 +443,14 @@ export default function EditProductScreen() {
 
               {showDatePicker && (
                 <DateTimePicker
-                  value={field.value ? new Date(field.value) : new Date()}
+                  value={field.value ? new Date(field.value + 'T12:00:00') : new Date()}
                   mode="date"
                   display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                   onValueChange={(_event, date: Date) => {
                     if (Platform.OS === 'android') setShowDatePicker(false);
-                    const y = date.getUTCFullYear();
-                    const m = String(date.getUTCMonth() + 1).padStart(2, '0');
-                    const d = String(date.getUTCDate()).padStart(2, '0');
+                    const y = date.getFullYear();
+                    const m = String(date.getMonth() + 1).padStart(2, '0');
+                    const d = String(date.getDate()).padStart(2, '0');
                     field.onChange(`${y}-${m}-${d}`);
                   }}
                   onDismiss={() => setShowDatePicker(false)}
