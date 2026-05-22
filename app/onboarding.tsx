@@ -37,34 +37,38 @@ export default function OnboardingScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
-      <View className="flex-1 items-center justify-center gap-6 px-8">
-        <OnboardingIllustration width={280} height={280} />
-
-        <View className="items-center gap-2">
-          <Text className="text-center text-3xl font-bold">FoodControl</Text>
-          <Text variant="muted" className="text-center text-base leading-relaxed">
-            Controle a validade dos seus alimentos e reduza o desperdício em casa.
-          </Text>
+      <View className="flex-1 justify-between">
+        {/* Ilustração + brand */}
+        <View className="flex-1 items-center justify-center gap-5 px-8 pb-8 pt-12">
+          <OnboardingIllustration width={240} height={240} />
+          <View className="items-center gap-1">
+            <Text className="text-center text-3xl font-bold tracking-tight">FoodControl</Text>
+            <Text variant="muted" className="text-center text-sm">
+              Menos desperdício, mais aproveitamento
+            </Text>
+          </View>
         </View>
 
-        <View className="w-full gap-3 pt-4">
-          {FEATURES.map(({ Icon, label }) => (
-            <View key={label} className="flex-row items-center gap-3">
-              <View className="items-center justify-center rounded-full bg-primary/10 p-2">
-                <Icon size={18} color={theme.primary} />
+        {/* Card com features + CTA */}
+        <View className="gap-6 rounded-t-3xl border border-b-0 border-border bg-card px-6 pb-6 pt-8">
+          <View className="gap-4">
+            {FEATURES.map(({ Icon, label }) => (
+              <View key={label} className="flex-row items-center gap-4">
+                <View
+                  className="h-10 w-10 items-center justify-center rounded-2xl"
+                  style={{ backgroundColor: theme.primary }}
+                >
+                  <Icon size={20} color={theme.primaryForeground} />
+                </View>
+                <Text className="flex-1 text-sm leading-relaxed text-foreground">{label}</Text>
               </View>
-              <Text variant="muted" className="flex-1 text-sm">
-                {label}
-              </Text>
-            </View>
-          ))}
-        </View>
-      </View>
+            ))}
+          </View>
 
-      <View className="px-8 pb-4">
-        <Button className="w-full" onPress={handleStart} accessibilityLabel="Começar">
-          <Text>Começar</Text>
-        </Button>
+          <Button className="w-full" onPress={handleStart} accessibilityLabel="Começar">
+            <Text className="font-semibold">Começar</Text>
+          </Button>
+        </View>
       </View>
     </SafeAreaView>
   );

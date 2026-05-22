@@ -19,6 +19,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ActionSheet } from '@/components/product/action-sheet';
 import { InfoRow } from '@/components/product/info-row';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Text } from '@/components/ui/text';
 import { CATEGORY_LABELS, LOCATION_LABELS } from '@/constants/labels';
@@ -103,7 +104,7 @@ export default function ProductDetailScreen() {
       >
         {/* Hero */}
         <View
-          className="items-center justify-center"
+          className="items-center justify-center overflow-hidden rounded-b-3xl"
           style={{ height: 240, backgroundColor: theme.card }}
         >
           {product.image_url ? (
@@ -114,12 +115,17 @@ export default function ProductDetailScreen() {
               transition={200}
             />
           ) : (
-            <Package size={72} color={theme.mutedForeground} strokeWidth={1} />
+            <View
+              className="h-28 w-28 items-center justify-center rounded-3xl"
+              style={{ backgroundColor: theme.muted }}
+            >
+              <Package size={52} color={theme.mutedForeground} strokeWidth={1.5} />
+            </View>
           )}
         </View>
 
-        <View className="gap-5 p-5">
-          {/* Nome + badge de status */}
+        <View className="gap-4 p-5">
+          {/* Nome + status */}
           <View className="gap-2">
             <View className="flex-row items-start justify-between gap-3">
               <Text className="flex-1 text-2xl font-bold leading-tight" numberOfLines={3}>
@@ -136,24 +142,9 @@ export default function ProductDetailScreen() {
             </Text>
           </View>
 
-          <Separator />
-
-          {/* Campos */}
-          <View className="gap-5">
-            <View className="flex-row gap-6">
-              <View className="flex-1">
-                <InfoRow label="Categoria" value={CATEGORY_LABELS[product.category]} />
-              </View>
-              <View className="flex-1">
-                <InfoRow
-                  label="Local"
-                  value={LOCATION_LABELS[product.storage_location]}
-                  icon={<LocationIcon size={14} color={theme.foreground} />}
-                />
-              </View>
-            </View>
-
-            <View className="flex-row gap-6">
+          {/* Info card */}
+          <Card className="gap-0 py-0">
+            <View className="flex-row gap-6 p-4">
               <View className="flex-1">
                 <InfoRow
                   label="Quantidade"
@@ -169,14 +160,34 @@ export default function ProductDetailScreen() {
               </View>
             </View>
 
+            <Separator />
+
+            <View className="flex-row gap-6 p-4">
+              <View className="flex-1">
+                <InfoRow label="Categoria" value={CATEGORY_LABELS[product.category]} />
+              </View>
+              <View className="flex-1">
+                <InfoRow
+                  label="Local"
+                  value={LOCATION_LABELS[product.storage_location]}
+                  icon={<LocationIcon size={14} color={theme.foreground} />}
+                />
+              </View>
+            </View>
+
             {product.barcode ? (
-              <InfoRow
-                label="Código de barras"
-                value={product.barcode}
-                icon={<Barcode size={14} color={theme.mutedForeground} />}
-              />
+              <>
+                <Separator />
+                <View className="p-4">
+                  <InfoRow
+                    label="Código de barras"
+                    value={product.barcode}
+                    icon={<Barcode size={14} color={theme.mutedForeground} />}
+                  />
+                </View>
+              </>
             ) : null}
-          </View>
+          </Card>
         </View>
       </ScrollView>
 
@@ -196,7 +207,7 @@ export default function ProductDetailScreen() {
           onPress={() => setAction('consumido')}
         >
           <CheckCircle2 size={14} color={theme.primaryForeground} />
-          <Text>Consumido</Text>
+          <Text className="font-semibold">Consumido</Text>
         </Button>
 
         <Button
@@ -206,7 +217,7 @@ export default function ProductDetailScreen() {
           onPress={() => setAction('descartado')}
         >
           <Trash2 size={14} color={theme.destructiveForeground} />
-          <Text>Descartado</Text>
+          <Text className="font-semibold">Descartado</Text>
         </Button>
       </View>
 
