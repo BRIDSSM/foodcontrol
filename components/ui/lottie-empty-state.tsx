@@ -1,12 +1,10 @@
-import Constants from 'expo-constants';
 import LottieView, { type LottieViewProps } from 'lottie-react-native';
 import { View } from 'react-native';
 
 import { Text } from '@/components/ui/text';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { isExpoGo } from '@/lib/platform';
 import { getTheme } from '@/lib/theme';
-
-const isExpoGo = Constants.appOwnership === 'expo';
 
 type Props = {
   source: LottieViewProps['source'];

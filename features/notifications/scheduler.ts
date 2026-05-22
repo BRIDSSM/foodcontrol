@@ -1,8 +1,12 @@
 import { addDays, set, startOfDay } from 'date-fns';
-import * as Notifications from 'expo-notifications';
 
+import { isExpoGo } from '@/lib/platform';
 import { supabase } from '@/lib/supabase';
 import type { Product } from '@/features/inventory/queries';
+
+function loadNotifications(): typeof import('expo-notifications') {
+  return require('expo-notifications');
+}
 
 const HOUR = 9;
 const MAX_PRODUCTS = 20; // 20 produtos × 3 triggers = 60 < limite iOS de 64
@@ -48,8 +52,10 @@ export async function scheduleProductNotifications(
   product: Product,
   warningDays: number,
 ): Promise<void> {
+  if (isExpoGo) return;
   await cancelProductNotifications(product.id);
 
+  const Notifications = loadNotifications();
   const triggers = computeTriggers(product.name, product.expiration_date, warningDays);
   for (const t of triggers) {
     await Notifications.scheduleNotificationAsync({
@@ -61,6 +67,8 @@ export async function scheduleProductNotifications(
 }
 
 export async function cancelProductNotifications(productId: string): Promise<void> {
+  if (isExpoGo) return;
+  const Notifications = loadNotifications();
   const kinds: TriggerKind[] = ['warning', 'expiry', 'expired'];
   await Promise.all(
     kinds.map((k) => Notifications.cancelScheduledNotificationAsync(`${productId}-${k}`)),
@@ -71,6 +79,8 @@ export async function rescheduleAllNotifications(
   userId: string,
   warningDays: number,
 ): Promise<void> {
+  if (isExpoGo) return;
+  const Notifications = loadNotifications();
   await Notifications.cancelAllScheduledNotificationsAsync();
 
   const { data: products, error } = await supabase

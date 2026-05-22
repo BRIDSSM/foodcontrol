@@ -1,4 +1,3 @@
-import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import LottieView from 'lottie-react-native';
@@ -7,8 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
-
-const isExpoGo = Constants.appOwnership === 'expo';
+import { isExpoGo } from '@/lib/platform';
 
 export const ONBOARDING_KEY = 'onboarding_complete';
 
