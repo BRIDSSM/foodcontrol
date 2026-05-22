@@ -4,8 +4,6 @@ import {
   Plus,
   Refrigerator,
   Search,
-  SearchX,
-  ShoppingCart,
   SlidersHorizontal,
   Snowflake,
 } from 'lucide-react-native';
@@ -24,6 +22,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ProductCard } from '@/components/product/product-card';
 import { StatusChip } from '@/components/product/status-chip';
+import { LottieEmptyState } from '@/components/ui/lottie-empty-state';
 import { Text } from '@/components/ui/text';
 import { CATEGORY_LABELS } from '@/constants/labels';
 import { useAuth } from '@/contexts/auth';
@@ -341,32 +340,26 @@ export default function HomeScreen() {
       <FlatList
         data={filtered}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
+        renderItem={({ item, index }) => (
           <View className="px-4">
-            <ProductCard product={item} />
+            <ProductCard product={item} index={index} />
           </View>
         )}
         ListHeaderComponent={ListHeader}
         ListEmptyComponent={
-          <View className="items-center gap-4 px-8 py-20">
-            <View className="items-center justify-center rounded-full bg-muted p-6">
-              {search || hasActiveFilter ? (
-                <SearchX size={48} color={theme.mutedForeground} />
-              ) : (
-                <ShoppingCart size={48} color={theme.mutedForeground} />
-              )}
-            </View>
-            <View className="items-center gap-1">
-              <Text variant="large">
-                {search || hasActiveFilter ? 'Nenhum resultado' : 'Estoque vazio'}
-              </Text>
-              <Text variant="muted" className="text-center">
-                {search || hasActiveFilter
-                  ? 'Tente outro filtro ou busca'
-                  : 'Adicione produtos para começar a\nmonitorar a validade'}
-              </Text>
-            </View>
-          </View>
+          search || hasActiveFilter ? (
+            <LottieEmptyState
+              source={require('@/assets/animations/no-results.json')}
+              title="Nenhum resultado"
+              description="Tente outro filtro ou busca"
+            />
+          ) : (
+            <LottieEmptyState
+              source={require('@/assets/animations/empty-inventory.json')}
+              title="Estoque vazio"
+              description={`Adicione produtos para começar a\nmonitorar a validade`}
+            />
+          )
         }
         contentContainerStyle={{ paddingBottom: 100 }}
         ItemSeparatorComponent={() => <View className="h-2" />}

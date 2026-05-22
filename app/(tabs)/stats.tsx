@@ -1,7 +1,13 @@
 import { useFocusEffect } from 'expo-router';
 import { CheckCircle2, Leaf, Trash2 } from 'lucide-react-native';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CategoryBar } from '@/components/stats/category-bar';
@@ -28,6 +34,16 @@ export default function StatsScreen() {
       refetch();
     }, [refetch]),
   );
+
+  const progressWidth = useSharedValue(0);
+  const progressStyle = useAnimatedStyle(() => ({ width: `${progressWidth.value}%` }));
+
+  useEffect(() => {
+    progressWidth.value = withTiming(stats?.utilizationRate ?? 0, {
+      duration: 800,
+      easing: Easing.out(Easing.quad),
+    });
+  }, [stats?.utilizationRate]);
 
   const maxCategoryTotal = stats ? Math.max(...stats.byCategory.map((c) => c.total), 1) : 1;
 
@@ -96,12 +112,9 @@ export default function StatsScreen() {
                 className="h-3 overflow-hidden rounded-full"
                 style={{ backgroundColor: theme.muted }}
               >
-                <View
+                <Animated.View
                   className="h-full rounded-full"
-                  style={{
-                    width: `${stats.utilizationRate}%`,
-                    backgroundColor: palette.safe,
-                  }}
+                  style={[{ backgroundColor: palette.safe }, progressStyle]}
                 />
               </View>
             </View>

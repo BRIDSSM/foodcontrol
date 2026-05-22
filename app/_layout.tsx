@@ -10,8 +10,10 @@ import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 
 import Constants from 'expo-constants';
+import * as SecureStore from 'expo-secure-store';
 
 import { AuthProvider, useAuth } from '@/contexts/auth';
+import { ONBOARDING_KEY } from '@/app/onboarding';
 import {
   requestNotificationPermissions,
   setupNotificationChannel,
@@ -40,20 +42,30 @@ function AuthGuard() {
   const segments = useSegments();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
+  const [hasSeenOnboarding, setHasSeenOnboarding] = useState<boolean | null>(null);
 
   useEffect(() => {
     setMounted(true);
+    SecureStore.getItemAsync(ONBOARDING_KEY).then((val) => {
+      setHasSeenOnboarding(val === 'true');
+    });
   }, []);
 
   useEffect(() => {
-    if (!mounted || isLoading) return;
+    if (!mounted || isLoading || hasSeenOnboarding === null) return;
+
+    if (!hasSeenOnboarding && segments[0] !== 'onboarding') {
+      router.replace('/onboarding');
+      return;
+    }
+
     const inAuthGroup = segments[0] === '(auth)';
-    if (!isSignedIn && !inAuthGroup) {
+    if (!isSignedIn && !inAuthGroup && segments[0] !== 'onboarding') {
       router.replace('/(auth)/login');
     } else if (isSignedIn && inAuthGroup) {
       router.replace('/(tabs)');
     }
-  }, [isSignedIn, isLoading, segments, mounted]);
+  }, [isSignedIn, isLoading, segments, mounted, hasSeenOnboarding]);
 
   useEffect(() => {
     if (!isSignedIn || isExpoGo) return;
@@ -78,6 +90,7 @@ export default function RootLayout() {
         <ThemeProvider value={NAV_THEME[colorScheme]}>
           <AuthGuard />
           <Stack>
+            <Stack.Screen name="onboarding" options={{ headerShown: false }} />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="(auth)" options={{ headerShown: false }} />
             <Stack.Screen name="product" options={{ headerShown: false }} />
