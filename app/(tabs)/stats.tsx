@@ -47,6 +47,14 @@ export default function StatsScreen() {
 
   const maxCategoryTotal = stats ? Math.max(...stats.byCategory.map((c) => c.total), 1) : 1;
 
+  if (isLoading) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center bg-background" edges={['top']}>
+        <ActivityIndicator size="large" color={theme.primary} />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
       <ScrollView
@@ -84,11 +92,7 @@ export default function StatsScreen() {
           </View>
         </View>
 
-        {isLoading ? (
-          <View className="items-center py-16">
-            <ActivityIndicator size="large" color={theme.primary} />
-          </View>
-        ) : !stats || stats.total === 0 ? (
+        {!stats || stats.total === 0 ? (
           <StatsEmptyState />
         ) : (
           <>
