@@ -1,7 +1,17 @@
+import { Link, router } from 'expo-router';
+import {
+  ArrowLeft,
+  Eye,
+  EyeOff,
+  Lock,
+  Mail,
+  MailCheck,
+  TriangleAlert,
+  User,
+  UserPlus,
+} from 'lucide-react-native';
 import { useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
-import { Link } from 'expo-router';
-import { Eye, EyeOff, MailCheck, TriangleAlert } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/button';
@@ -61,26 +71,55 @@ export default function RegisterScreen() {
   if (awaitingConfirmation) {
     return (
       <SafeAreaView className="flex-1 bg-background">
-        <View className="flex-1 items-center justify-center gap-6 px-8">
-          <View className="items-center justify-center rounded-full bg-primary/10 p-6">
-            <MailCheck size={48} color={theme.primary} />
+        <ScrollView
+          className="flex-1"
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View className="flex-1 justify-between">
+            <View className="items-center gap-5 px-8 pb-10 pt-16">
+              <View
+                className="h-20 w-20 items-center justify-center rounded-3xl"
+                style={{ backgroundColor: theme.primary }}
+              >
+                <MailCheck size={36} color={theme.primaryForeground} />
+              </View>
+              <View className="items-center gap-1">
+                <Text className="text-3xl font-bold tracking-tight">Verifique seu e-mail</Text>
+                <Text variant="muted" className="text-center text-sm">
+                  Acesse o link enviado para ativar sua conta
+                </Text>
+              </View>
+            </View>
+
+            <View className="flex-1 gap-6 rounded-t-3xl border border-b-0 border-border bg-card px-6 pb-6 pt-8">
+              <View className="flex-1 items-center justify-center gap-4 py-4">
+                <Text variant="muted" className="text-center text-sm leading-relaxed">
+                  Enviamos um link de confirmação para{'\n'}
+                  <Text className="font-semibold text-foreground">{email}</Text>
+                  {'\n\n'}Clique no link para ativar sua conta e depois faça login.
+                </Text>
+              </View>
+              <View className="gap-4">
+                <Link href="/(auth)/login" asChild>
+                  <Button className="w-full" accessibilityLabel="Ir para o login">
+                    <Text className="font-semibold">Ir para o login</Text>
+                  </Button>
+                </Link>
+                <Pressable
+                  onPress={() => setAwaitingConfirmation(false)}
+                  accessibilityLabel="Voltar ao cadastro"
+                  className="flex-row items-center justify-center gap-2 py-2"
+                >
+                  <ArrowLeft size={16} color={theme.mutedForeground} />
+                  <Text variant="muted" className="text-sm">
+                    Voltar ao cadastro
+                  </Text>
+                </Pressable>
+              </View>
+            </View>
           </View>
-          <View className="items-center gap-2">
-            <Text variant="h2" className="text-center">
-              Verifique seu e-mail
-            </Text>
-            <Text variant="muted" className="text-center">
-              Enviamos um link de confirmação para{' '}
-              <Text className="font-medium text-foreground">{email}</Text>. Acesse seu e-mail e
-              clique no link para ativar sua conta.
-            </Text>
-          </View>
-          <Link href="/(auth)/login" asChild>
-            <Button variant="outline" className="w-full">
-              <Text>Ir para o login</Text>
-            </Button>
-          </Link>
-        </View>
+        </ScrollView>
       </SafeAreaView>
     );
   }
@@ -89,104 +128,133 @@ export default function RegisterScreen() {
     <SafeAreaView className="flex-1 bg-background">
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ padding: 24, gap: 32 }}
+        contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
       >
-        <View className="gap-1 pt-4">
-          <Text variant="h2">Criar conta</Text>
-          <Text variant="muted">Comece a controlar a validade dos seus alimentos</Text>
-        </View>
-
-        {error && (
-          <View className="flex-row items-center gap-2 rounded-lg bg-destructive/10 px-4 py-3">
-            <TriangleAlert size={16} color={theme.destructive} />
-            <Text className="flex-1 text-sm text-destructive">{error}</Text>
+        <View className="flex-1 justify-between">
+          {/* Brand */}
+          <View className="items-center gap-5 px-8 pb-10 pt-16">
+            <View
+              className="h-20 w-20 items-center justify-center rounded-3xl"
+              style={{ backgroundColor: theme.primary }}
+            >
+              <UserPlus size={36} color={theme.primaryForeground} />
+            </View>
+            <View className="items-center gap-1">
+              <Text className="text-3xl font-bold tracking-tight">Criar conta</Text>
+              <Text variant="muted" className="text-center text-sm">
+                Comece a controlar a validade dos seus alimentos
+              </Text>
+            </View>
           </View>
-        )}
 
-        <View className="gap-4">
-          <FormField
-            label="Nome completo"
-            nativeID="reg-name"
-            placeholder="Seu nome"
-            autoComplete="name"
-            autoCapitalize="words"
-            value={fullName}
-            onChangeText={setFullName}
-          />
-          <FormField
-            label="E-mail"
-            nativeID="reg-email"
-            placeholder="seu@email.com"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoComplete="email"
-            value={email}
-            onChangeText={setEmail}
-          />
-          <FormField
-            label="Senha"
-            nativeID="reg-password"
-            placeholder="Mínimo 6 caracteres"
-            secureTextEntry={!showPassword}
-            autoCapitalize="none"
-            autoComplete="new-password"
-            value={password}
-            onChangeText={setPassword}
-            rightIcon={
-              <Pressable
-                onPress={() => setShowPassword((v) => !v)}
-                accessibilityLabel={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+          {/* Form */}
+          <View className="flex-1 gap-6 rounded-t-3xl border border-b-0 border-border bg-card px-6 pb-6 pt-8">
+            <View className="gap-1">
+              <Text variant="h3">Suas informações</Text>
+              <Text variant="muted" className="text-sm">
+                Preencha os dados para criar sua conta
+              </Text>
+            </View>
+
+            {error && (
+              <View className="flex-row items-center gap-3 rounded-xl bg-destructive/10 px-4 py-3">
+                <TriangleAlert size={16} color={theme.destructive} />
+                <Text className="flex-1 text-sm text-destructive">{error}</Text>
+              </View>
+            )}
+
+            <View className="gap-4">
+              <FormField
+                label="Nome completo"
+                nativeID="reg-name"
+                placeholder="Seu nome"
+                autoComplete="name"
+                autoCapitalize="words"
+                value={fullName}
+                onChangeText={setFullName}
+                leftIcon={<User size={16} color={theme.mutedForeground} />}
+              />
+              <FormField
+                label="E-mail"
+                nativeID="reg-email"
+                placeholder="seu@email.com"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoComplete="email"
+                value={email}
+                onChangeText={setEmail}
+                leftIcon={<Mail size={16} color={theme.mutedForeground} />}
+              />
+              <FormField
+                label="Senha"
+                nativeID="reg-password"
+                placeholder="Mínimo 6 caracteres"
+                secureTextEntry={!showPassword}
+                autoCapitalize="none"
+                autoComplete="new-password"
+                value={password}
+                onChangeText={setPassword}
+                leftIcon={<Lock size={16} color={theme.mutedForeground} />}
+                rightIcon={
+                  <Pressable
+                    onPress={() => setShowPassword((v) => !v)}
+                    accessibilityLabel={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                  >
+                    {showPassword ? (
+                      <EyeOff size={16} color={theme.mutedForeground} />
+                    ) : (
+                      <Eye size={16} color={theme.mutedForeground} />
+                    )}
+                  </Pressable>
+                }
+              />
+              <FormField
+                label="Confirmar senha"
+                nativeID="reg-confirm"
+                placeholder="Repita a senha"
+                secureTextEntry={!showConfirm}
+                autoCapitalize="none"
+                autoComplete="new-password"
+                value={confirm}
+                onChangeText={setConfirm}
+                leftIcon={<Lock size={16} color={theme.mutedForeground} />}
+                rightIcon={
+                  <Pressable
+                    onPress={() => setShowConfirm((v) => !v)}
+                    accessibilityLabel={showConfirm ? 'Ocultar senha' : 'Mostrar senha'}
+                  >
+                    {showConfirm ? (
+                      <EyeOff size={16} color={theme.mutedForeground} />
+                    ) : (
+                      <Eye size={16} color={theme.mutedForeground} />
+                    )}
+                  </Pressable>
+                }
+              />
+            </View>
+
+            <View className="gap-4 pt-2">
+              <Button
+                className="w-full"
+                accessibilityLabel="Criar conta"
+                onPress={handleSignUp}
+                disabled={loading}
               >
-                {showPassword ? (
-                  <EyeOff size={16} color={theme.mutedForeground} />
-                ) : (
-                  <Eye size={16} color={theme.mutedForeground} />
-                )}
-              </Pressable>
-            }
-          />
-          <FormField
-            label="Confirmar senha"
-            nativeID="reg-confirm"
-            placeholder="Repita a senha"
-            secureTextEntry={!showConfirm}
-            autoCapitalize="none"
-            autoComplete="new-password"
-            value={confirm}
-            onChangeText={setConfirm}
-            rightIcon={
-              <Pressable
-                onPress={() => setShowConfirm((v) => !v)}
-                accessibilityLabel={showConfirm ? 'Ocultar senha' : 'Mostrar senha'}
-              >
-                {showConfirm ? (
-                  <EyeOff size={16} color={theme.mutedForeground} />
-                ) : (
-                  <Eye size={16} color={theme.mutedForeground} />
-                )}
-              </Pressable>
-            }
-          />
-        </View>
-
-        <View className="gap-3">
-          <Button
-            className="w-full"
-            accessibilityLabel="Criar conta"
-            onPress={handleSignUp}
-            disabled={loading}
-          >
-            <Text>{loading ? 'Criando conta…' : 'Criar conta'}</Text>
-          </Button>
-
-          <View className="flex-row items-center justify-center gap-1">
-            <Text variant="muted">Já tem conta?</Text>
-            <Link href="/(auth)/login" asChild>
-              <Button variant="link" className="px-1">
-                <Text>Entrar</Text>
+                <Text className="font-semibold">{loading ? 'Criando conta…' : 'Criar conta'}</Text>
               </Button>
-            </Link>
+
+              <View className="flex-row items-center justify-center gap-1">
+                <Text variant="muted" className="text-sm">
+                  Já tem conta?
+                </Text>
+                <Link href="/(auth)/login" asChild>
+                  <Button variant="link" className="px-1">
+                    <Text className="text-sm font-semibold text-primary">Entrar</Text>
+                  </Button>
+                </Link>
+              </View>
+            </View>
           </View>
         </View>
       </ScrollView>
