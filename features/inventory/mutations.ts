@@ -8,11 +8,21 @@ import {
 } from '@/features/notifications/scheduler';
 import { inventoryKeys, type Product } from './queries';
 
-function getProfileFromCache(
+async function getProfileWithFallback(
   qc: ReturnType<typeof useQueryClient>,
   userId: string,
-): Tables<'profiles'> | undefined {
-  return qc.getQueryData<Tables<'profiles'>>(['profile', userId]);
+): Promise<Tables<'profiles'> | null> {
+  const cached = qc.getQueryData<Tables<'profiles'>>(['profile', userId]);
+  if (cached) return cached;
+
+  if (__DEV__) console.log('[Mutations] Profile não encontrado no cache, buscando do Supabase...');
+  const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
+
+  if (error || !data) {
+    if (__DEV__) console.warn('[Mutations] Não foi possível buscar profile:', error?.message);
+    return null;
+  }
+  return data;
 }
 
 export function useCreateProduct() {
@@ -25,10 +35,17 @@ export function useCreateProduct() {
     },
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: inventoryKeys.all });
-      const profile = getProfileFromCache(qc, data.user_id);
-      if (profile?.notifications_enabled) {
-        scheduleProductNotifications(data, profile.warning_days_before_expiry).catch(() => {});
-      }
+      getProfileWithFallback(qc, data.user_id).then((profile) => {
+        if (profile?.notifications_enabled) {
+          if (__DEV__)
+            console.log('[Mutations] Agendando notificações para novo produto:', data.name);
+          scheduleProductNotifications(data, profile.warning_days_before_expiry).catch((err) => {
+            if (__DEV__) console.error('[Mutations] Erro ao agendar:', err);
+          });
+        } else if (__DEV__) {
+          console.log('[Mutations] Notificações desabilitadas ou profile não encontrado');
+        }
+      });
     },
   });
 }
@@ -49,12 +66,17 @@ export function useUpdateProduct() {
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: inventoryKeys.all });
       qc.invalidateQueries({ queryKey: inventoryKeys.detail(data.id) });
-      const profile = getProfileFromCache(qc, data.user_id);
-      if (profile?.notifications_enabled) {
-        scheduleProductNotifications(data, profile.warning_days_before_expiry).catch(() => {});
-      } else {
-        cancelProductNotifications(data.id).catch(() => {});
-      }
+      getProfileWithFallback(qc, data.user_id).then((profile) => {
+        if (profile?.notifications_enabled) {
+          if (__DEV__) console.log('[Mutations] Reagendando notificações para produto:', data.name);
+          scheduleProductNotifications(data, profile.warning_days_before_expiry).catch((err) => {
+            if (__DEV__) console.error('[Mutations] Erro ao reagendar:', err);
+          });
+        } else {
+          if (__DEV__) console.log('[Mutations] Notificações desabilitadas, cancelando...');
+          cancelProductNotifications(data.id).catch(() => {});
+        }
+      });
     },
   });
 }
