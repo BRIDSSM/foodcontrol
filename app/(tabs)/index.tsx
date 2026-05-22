@@ -6,24 +6,37 @@ import {
   Search,
   SearchX,
   ShoppingCart,
+  SlidersHorizontal,
   Snowflake,
 } from 'lucide-react-native';
 import { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, ScrollView, TextInput, View } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  Modal,
+  Pressable,
+  ScrollView,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ProductCard } from '@/components/product/product-card';
 import { StatusChip } from '@/components/product/status-chip';
 import { Text } from '@/components/ui/text';
+import { CATEGORY_LABELS } from '@/constants/labels';
 import { useAuth } from '@/contexts/auth';
 import { useProducts } from '@/features/inventory/queries';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { getStatus, type ProductStatus } from '@/lib/status';
 import { getTheme } from '@/lib/theme';
 import { getFirstName } from '@/lib/utils';
+import { CATEGORIES } from '@/schemas/product';
 import type { Enums } from '@/types/database';
 
 type LocationFilter = Enums<'storage_location'> | 'todos';
+type CategoryFilter = Enums<'product_category'> | 'todas';
 
 type ChipDef = {
   key: LocationFilter;
@@ -45,6 +58,8 @@ export default function HomeScreen() {
 
   const [search, setSearch] = useState('');
   const [locationFilter, setLocationFilter] = useState<LocationFilter>('todos');
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('todas');
+  const [showFilterModal, setShowFilterModal] = useState(false);
 
   const { data: products = [], isLoading, refetch } = useProducts();
 
@@ -57,10 +72,11 @@ export default function HomeScreen() {
   const filtered = useMemo(() => {
     return products.filter((p) => {
       const matchesLocation = locationFilter === 'todos' || p.storage_location === locationFilter;
+      const matchesCategory = categoryFilter === 'todas' || p.category === categoryFilter;
       const matchesSearch = !search || p.name.toLowerCase().includes(search.toLowerCase());
-      return matchesLocation && matchesSearch;
+      return matchesLocation && matchesCategory && matchesSearch;
     });
-  }, [products, locationFilter, search]);
+  }, [products, locationFilter, categoryFilter, search]);
 
   const counts = useMemo(() => {
     const result: Record<ProductStatus, number> = { safe: 0, warning: 0, expired: 0 };
@@ -68,6 +84,7 @@ export default function HomeScreen() {
     return result;
   }, [products]);
 
+  const hasActiveFilter = locationFilter !== 'todos' || categoryFilter !== 'todas';
   const firstName = getFirstName(user);
 
   const ListHeader = (
@@ -89,7 +106,7 @@ export default function HomeScreen() {
         <StatusChip label="Vencidos" count={counts.expired} status="expired" />
       </View>
 
-      {/* Search */}
+      {/* Search + filter icon */}
       <View className="mx-4 mb-3 flex-row items-center gap-2 rounded-xl border border-input bg-muted px-3 py-1.5">
         <Search size={16} color={theme.mutedForeground} />
         <TextInput
@@ -101,9 +118,32 @@ export default function HomeScreen() {
           returnKeyType="search"
           accessibilityLabel="Buscar produto"
         />
+        <Pressable
+          onPress={() => setShowFilterModal(true)}
+          accessibilityLabel="Abrir filtros"
+          hitSlop={8}
+        >
+          <SlidersHorizontal
+            size={16}
+            color={hasActiveFilter ? theme.primary : theme.mutedForeground}
+          />
+          {hasActiveFilter && (
+            <View
+              style={{
+                position: 'absolute',
+                top: -3,
+                right: -3,
+                width: 7,
+                height: 7,
+                borderRadius: 4,
+                backgroundColor: theme.primary,
+              }}
+            />
+          )}
+        </Pressable>
       </View>
 
-      {/* Location filter chips — scrollable */}
+      {/* Location filter chips */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -134,6 +174,103 @@ export default function HomeScreen() {
           );
         })}
       </ScrollView>
+
+      {/* Unified filter modal */}
+      <Modal
+        visible={showFilterModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowFilterModal(false)}
+      >
+        <Pressable className="flex-1 bg-black/50" onPress={() => setShowFilterModal(false)}>
+          <View className="absolute bottom-0 left-0 right-0 rounded-t-2xl bg-card pb-8">
+            <View className="items-center py-3">
+              <View className="h-1 w-10 rounded-full bg-muted-foreground/30" />
+            </View>
+
+            <View className="flex-row items-center justify-between px-4 pb-4">
+              <Text className="text-base font-semibold">Filtros</Text>
+              {hasActiveFilter && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setLocationFilter('todos');
+                    setCategoryFilter('todas');
+                    setShowFilterModal(false);
+                  }}
+                  accessibilityLabel="Limpar filtros"
+                >
+                  <Text className="text-sm text-primary">Limpar</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {/* Local section */}
+            <Text className="px-4 pb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Local
+            </Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: 8, paddingHorizontal: 16, paddingBottom: 16 }}
+            >
+              {LOCATION_CHIPS.map(({ key, label, Icon }) => {
+                const active = locationFilter === key;
+                const iconColor = active ? theme.primaryForeground : theme.mutedForeground;
+                return (
+                  <Pressable
+                    key={key}
+                    onPress={() => setLocationFilter(key)}
+                    accessibilityLabel={label}
+                    className="flex-row items-center gap-1.5 rounded-full border px-3 py-1.5"
+                    style={{
+                      borderColor: active ? theme.primary : theme.border,
+                      backgroundColor: active ? theme.primary : 'transparent',
+                    }}
+                  >
+                    {Icon && <Icon size={12} color={iconColor} />}
+                    <Text
+                      className="text-xs font-medium"
+                      style={{ color: active ? theme.primaryForeground : theme.mutedForeground }}
+                    >
+                      {label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+
+            {/* Category section */}
+            <Text className="px-4 pb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Categoria
+            </Text>
+            <ScrollView style={{ maxHeight: 260 }} showsVerticalScrollIndicator={false}>
+              <TouchableOpacity
+                onPress={() => setCategoryFilter('todas')}
+                className="flex-row items-center justify-between px-4 py-3"
+                accessibilityLabel="Todas as categorias"
+              >
+                <Text className={categoryFilter === 'todas' ? 'font-semibold text-primary' : ''}>
+                  Todas as categorias
+                </Text>
+                {categoryFilter === 'todas' && <View className="h-2 w-2 rounded-full bg-primary" />}
+              </TouchableOpacity>
+              {CATEGORIES.map((cat) => (
+                <TouchableOpacity
+                  key={cat}
+                  onPress={() => setCategoryFilter(cat)}
+                  className="flex-row items-center justify-between px-4 py-3"
+                  accessibilityLabel={CATEGORY_LABELS[cat]}
+                >
+                  <Text className={cat === categoryFilter ? 'font-semibold text-primary' : ''}>
+                    {CATEGORY_LABELS[cat]}
+                  </Text>
+                  {cat === categoryFilter && <View className="h-2 w-2 rounded-full bg-primary" />}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </Pressable>
+      </Modal>
     </View>
   );
 
@@ -159,7 +296,7 @@ export default function HomeScreen() {
         ListEmptyComponent={
           <View className="items-center gap-4 px-8 py-20">
             <View className="items-center justify-center rounded-full bg-muted p-6">
-              {search || locationFilter !== 'todos' ? (
+              {search || hasActiveFilter ? (
                 <SearchX size={48} color={theme.mutedForeground} />
               ) : (
                 <ShoppingCart size={48} color={theme.mutedForeground} />
@@ -167,10 +304,10 @@ export default function HomeScreen() {
             </View>
             <View className="items-center gap-1">
               <Text variant="large">
-                {search || locationFilter !== 'todos' ? 'Nenhum resultado' : 'Estoque vazio'}
+                {search || hasActiveFilter ? 'Nenhum resultado' : 'Estoque vazio'}
               </Text>
               <Text variant="muted" className="text-center">
-                {search || locationFilter !== 'todos'
+                {search || hasActiveFilter
                   ? 'Tente outro filtro ou busca'
                   : 'Adicione produtos para começar a\nmonitorar a validade'}
               </Text>
