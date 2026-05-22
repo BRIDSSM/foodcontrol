@@ -54,13 +54,12 @@ const { session, user, isSignedIn, isLoading } = useAuth();
 
 ### Tabelas principais
 
-| Tabela                | Propósito                                               |
-| --------------------- | ------------------------------------------------------- |
-| `profiles`            | Dados do usuário (nome, avatar, preferências de alerta) |
-| `products`            | Inventário ativo                                        |
-| `product_removals`    | Histórico de remoções (consumido/descartado)            |
-| `notification_tokens` | Tokens Expo para push (fase futura)                     |
-| `barcode_cache`       | Cache de lookups Cosmos por GTIN                        |
+| Tabela             | Propósito                                               |
+| ------------------ | ------------------------------------------------------- |
+| `profiles`         | Dados do usuário (nome, avatar, preferências de alerta) |
+| `products`         | Inventário ativo                                        |
+| `product_removals` | Histórico de remoções (consumido/descartado)            |
+| `barcode_cache`    | Cache de lookups Cosmos por GTIN                        |
 
 ### RLS — por que o cliente acessa o banco diretamente com segurança
 

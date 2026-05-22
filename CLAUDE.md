@@ -177,18 +177,6 @@ create index product_removals_user_date_idx
 
 > **Por que snapshot e não FK?** O produto pode ser excluído, mas o histórico (e a métrica de aproveitamento) precisa permanecer.
 
-#### `notification_tokens` — push tokens (preparação para futuro)
-
-```sql
-create table public.notification_tokens (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users(id) on delete cascade,
-  expo_push_token text not null unique,
-  device_info jsonb,
-  created_at timestamptz not null default now()
-);
-```
-
 ### 4.3 Row Level Security (obrigatório)
 
 Habilitar RLS em **todas** as tabelas. Padrão de policy:
@@ -209,7 +197,7 @@ create policy "Users delete own products"
   on public.products for delete using (auth.uid() = user_id);
 ```
 
-Replicar o mesmo padrão para `profiles`, `product_removals` e `notification_tokens`.
+Replicar o mesmo padrão para `profiles` e `product_removals`.
 
 ### 4.4 Triggers úteis
 

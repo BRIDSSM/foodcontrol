@@ -35,30 +35,6 @@ export type Database = {
         };
         Relationships: [];
       };
-      notification_tokens: {
-        Row: {
-          created_at: string;
-          device_info: Json | null;
-          expo_push_token: string;
-          id: string;
-          user_id: string;
-        };
-        Insert: {
-          created_at?: string;
-          device_info?: Json | null;
-          expo_push_token: string;
-          id?: string;
-          user_id: string;
-        };
-        Update: {
-          created_at?: string;
-          device_info?: Json | null;
-          expo_push_token?: string;
-          id?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
       product_removals: {
         Row: {
           category: Database['public']['Enums']['product_category'];
