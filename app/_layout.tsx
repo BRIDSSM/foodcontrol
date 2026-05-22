@@ -69,6 +69,14 @@ function AuthGuard() {
       .catch(() => {});
   }, [isSignedIn]);
 
+  useEffect(() => {
+    const sub = Notifications.addNotificationResponseReceivedListener((response) => {
+      const productId = response.notification.request.content.data?.productId as string | undefined;
+      if (productId) router.push(`/product/${productId}`);
+    });
+    return () => sub.remove();
+  }, []);
+
   return null;
 }
 

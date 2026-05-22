@@ -7,6 +7,9 @@ export async function setupNotificationChannel(): Promise<void> {
     name: 'Alertas de validade',
     importance: Notifications.AndroidImportance.HIGH,
     vibrationPattern: [0, 250, 250, 250],
+    lightColor: '#1D4FD7',
+    lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
+    sound: 'default',
   });
 }
 

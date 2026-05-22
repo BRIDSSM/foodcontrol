@@ -28,17 +28,17 @@ function computeTriggers(name: string, expirationDateStr: string, warningDays: n
     {
       date: at9(addDays(expiry, -warningDays)),
       kind: 'warning',
-      body: `${name} vence em ${warningDays} dias`,
+      body: `🟡 Vence em ${warningDays} dias — consuma em breve`,
     },
     {
       date: at9(expiry),
       kind: 'expiry',
-      body: `${name} vence hoje`,
+      body: `🔴 Vence hoje — verifique seu estoque`,
     },
     {
       date: at9(addDays(expiry, 1)),
       kind: 'expired',
-      body: `${name} venceu ontem`,
+      body: `⚠️ Venceu ontem — descarte ou registre o consumo`,
     },
   ];
 
@@ -56,7 +56,13 @@ export async function scheduleProductNotifications(
   for (const t of triggers) {
     await Notifications.scheduleNotificationAsync({
       identifier: `${product.id}-${t.kind}`,
-      content: { title: 'FoodControl', body: t.body, sound: true },
+      content: {
+        title: product.name,
+        subtitle: 'Alerta de validade',
+        body: t.body,
+        sound: true,
+        data: { productId: product.id },
+      },
       trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: t.date },
     });
   }
