@@ -1,7 +1,7 @@
 import { useFocusEffect } from 'expo-router';
 import { CheckCircle2, Leaf, Trash2 } from 'lucide-react-native';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
+import { ActivityIndicator, Pressable, RefreshControl, ScrollView, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -28,6 +28,13 @@ export default function StatsScreen() {
 
   const [period, setPeriod] = useState<Period>('7d');
   const { data: stats, isLoading, refetch } = useStats(period);
+  const [isPullRefreshing, setIsPullRefreshing] = useState(false);
+
+  async function handleRefresh() {
+    setIsPullRefreshing(true);
+    await refetch();
+    setIsPullRefreshing(false);
+  }
 
   useFocusEffect(
     useCallback(() => {
@@ -60,6 +67,14 @@ export default function StatsScreen() {
       <ScrollView
         contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 40, flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isPullRefreshing}
+            onRefresh={handleRefresh}
+            colors={[theme.primary]}
+            tintColor={theme.primary}
+          />
+        }
       >
         {/* Header */}
         <View className="gap-3 pt-2">
