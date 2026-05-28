@@ -15,6 +15,7 @@ export default function ProfileLayout() {
           contentStyle: { backgroundColor: theme.background },
         }}
       >
+        <Stack.Screen name="edit" options={{ title: 'Editar perfil' }} />
         <Stack.Screen name="settings" options={{ title: 'Configurações' }} />
       </Stack>
     </View>

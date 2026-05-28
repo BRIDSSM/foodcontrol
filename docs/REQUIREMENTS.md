@@ -109,7 +109,7 @@
 | Gráfico mensal      | RF31                            | 🔲 Pendente     | Sem breakdown mensal na query; sem gráfico de linha |
 | Notificações locais | RF33–RF39                       | ✅ Implementado |                                                     |
 | Configurações       | RF41–RF43                       | ✅ Implementado |                                                     |
-| Edição de perfil    | RF40                            | 🔲 Pendente     | Sem tela/formulário para editar nome e avatar       |
+| Edição de perfil    | RF40                            | ✅ Implementado |                                                     |
 
 ---
 
