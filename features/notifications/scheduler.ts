@@ -2,10 +2,9 @@ import { addDays, set, startOfDay } from 'date-fns';
 import * as Notifications from 'expo-notifications';
 
 import type { Product } from '@/features/inventory/queries';
+import { DEFAULT_ALERT_HOUR, DEFAULT_ALERT_MINUTE, getAlertTime } from '@/lib/alertTime';
 import { supabase } from '@/lib/supabase';
 
-const HOUR = 9;
-const MINUTE = 0;
 const MAX_PRODUCTS = 20;
 
 type TriggerKind = 'warning' | 'expiry' | 'expired';
@@ -16,27 +15,33 @@ interface Trigger {
   body: string;
 }
 
-function at9(date: Date): Date {
-  return set(date, { hours: HOUR, minutes: MINUTE, seconds: 0, milliseconds: 0 });
+function atTime(date: Date, hour: number, minute: number): Date {
+  return set(date, { hours: hour, minutes: minute, seconds: 0, milliseconds: 0 });
 }
 
-function computeTriggers(name: string, expirationDateStr: string, warningDays: number): Trigger[] {
+function computeTriggers(
+  name: string,
+  expirationDateStr: string,
+  warningDays: number,
+  hour: number,
+  minute: number,
+): Trigger[] {
   const now = new Date();
   const expiry = startOfDay(new Date(expirationDateStr + 'T12:00:00'));
 
   const candidates: Trigger[] = [
     {
-      date: at9(addDays(expiry, -warningDays)),
+      date: atTime(addDays(expiry, -warningDays), hour, minute),
       kind: 'warning',
       body: `Vence em ${warningDays} dias, consuma em breve`,
     },
     {
-      date: at9(expiry),
+      date: atTime(expiry, hour, minute),
       kind: 'expiry',
       body: `Vence hoje, verifique seu estoque`,
     },
     {
-      date: at9(addDays(expiry, 1)),
+      date: atTime(addDays(expiry, 1), hour, minute),
       kind: 'expired',
       body: `Venceu ontem, descarte ou registre o consumo`,
     },
@@ -48,10 +53,18 @@ function computeTriggers(name: string, expirationDateStr: string, warningDays: n
 export async function scheduleProductNotifications(
   product: Product,
   warningDays: number,
+  hour = DEFAULT_ALERT_HOUR,
+  minute = DEFAULT_ALERT_MINUTE,
 ): Promise<void> {
   await cancelProductNotifications(product.id);
 
-  const triggers = computeTriggers(product.name, product.expiration_date, warningDays);
+  const triggers = computeTriggers(
+    product.name,
+    product.expiration_date,
+    warningDays,
+    hour,
+    minute,
+  );
 
   for (const t of triggers) {
     await Notifications.scheduleNotificationAsync({
@@ -81,6 +94,8 @@ export async function rescheduleAllNotifications(
 ): Promise<void> {
   await Notifications.cancelAllScheduledNotificationsAsync();
 
+  const { hour, minute } = await getAlertTime();
+
   const { data: products, error } = await supabase
     .from('products')
     .select('*')
@@ -91,6 +106,6 @@ export async function rescheduleAllNotifications(
   if (error || !products) return;
 
   for (const product of products) {
-    await scheduleProductNotifications(product, warningDays);
+    await scheduleProductNotifications(product, warningDays, hour, minute);
   }
 }
