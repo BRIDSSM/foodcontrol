@@ -98,19 +98,18 @@
 
 ## Status de Implementação
 
-| Fase                | Requisitos                      | Status          | Observação                                                       |
-| ------------------- | ------------------------------- | --------------- | ---------------------------------------------------------------- |
-| Autenticação        | RF01–RF06                       | ✅ Implementado |                                                                  |
-| CRUD de produtos    | RF07–RF13, RF15–RF17, RF24–RF25 | ✅ Implementado |                                                                  |
-| Pull-to-refresh     | RF14                            | 🔲 Pendente     | `FlatList` sem `RefreshControl` — `refetch` já disponível        |
-| Upload de imagem    | RF18                            | ⚠️ Parcial      | Galeria implementada; opção câmera (`launchCameraAsync`) ausente |
-| Scanner + Cosmos    | RF19–RF23                       | ✅ Implementado |                                                                  |
-| Estatísticas        | RF26–RF30, RF32                 | ✅ Implementado |                                                                  |
-| Gráfico mensal      | RF31                            | 🔲 Pendente     | Sem breakdown mensal na query; sem gráfico de linha              |
-| Notificações locais | RF33–RF39                       | ✅ Implementado |                                                                  |
-| Configurações       | RF41–RF42                       | ✅ Implementado |                                                                  |
-| Horário do alerta   | RF43                            | 🔲 Pendente     | Horário 09:00 hardcoded; sem `TimePicker` nem `AsyncStorage`     |
-| Edição de perfil    | RF40                            | 🔲 Pendente     | Sem tela/formulário para editar nome e avatar                    |
+| Fase                | Requisitos                      | Status          | Observação                                          |
+| ------------------- | ------------------------------- | --------------- | --------------------------------------------------- |
+| Autenticação        | RF01–RF06                       | ✅ Implementado |                                                     |
+| CRUD de produtos    | RF07–RF13, RF15–RF17, RF24–RF25 | ✅ Implementado |                                                     |
+| Pull-to-refresh     | RF14                            | ✅ Implementado |                                                     |
+| Upload de imagem    | RF18                            | ✅ Implementado |                                                     |
+| Scanner + Cosmos    | RF19–RF23                       | ✅ Implementado |                                                     |
+| Estatísticas        | RF26–RF30, RF32                 | ✅ Implementado |                                                     |
+| Gráfico mensal      | RF31                            | 🔲 Pendente     | Sem breakdown mensal na query; sem gráfico de linha |
+| Notificações locais | RF33–RF39                       | ✅ Implementado |                                                     |
+| Configurações       | RF41–RF43                       | ✅ Implementado |                                                     |
+| Edição de perfil    | RF40                            | 🔲 Pendente     | Sem tela/formulário para editar nome e avatar       |
 
 ---
 

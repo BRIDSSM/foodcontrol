@@ -72,6 +72,7 @@ export default function EditProductScreen() {
 
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showImageOptions, setShowImageOptions] = useState(false);
 
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
@@ -111,11 +112,26 @@ export default function EditProductScreen() {
     }, [scanData]),
   );
 
-  async function pickImage() {
+  async function pickFromGallery() {
+    setShowImageOptions(false);
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') return;
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    if (!result.canceled && result.assets[0]) {
+      form.setValue('image_url', result.assets[0].uri, { shouldDirty: true });
+    }
+  }
+
+  async function pickFromCamera() {
+    setShowImageOptions(false);
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') return;
+    const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
@@ -179,8 +195,8 @@ export default function EditProductScreen() {
           render={({ field }) => (
             <View className="items-center gap-2">
               <Pressable
-                onPress={pickImage}
-                accessibilityLabel="Selecionar imagem do produto"
+                onPress={() => setShowImageOptions(true)}
+                accessibilityLabel="Selecionar ou tirar foto do produto"
                 style={{
                   width: 140,
                   height: 140,
@@ -226,6 +242,39 @@ export default function EditProductScreen() {
             </View>
           )}
         />
+
+        {/* Modal seleção de imagem */}
+        <Modal
+          visible={showImageOptions}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setShowImageOptions(false)}
+        >
+          <Pressable className="flex-1 bg-black/50" onPress={() => setShowImageOptions(false)}>
+            <View className="absolute bottom-0 left-0 right-0 rounded-t-2xl bg-card pb-8">
+              <View className="items-center py-3">
+                <View className="h-1 w-10 rounded-full bg-muted-foreground/30" />
+              </View>
+              <Text className="px-4 pb-3 text-base font-semibold">Adicionar foto</Text>
+              <TouchableOpacity
+                onPress={pickFromCamera}
+                className="flex-row items-center gap-3 px-4 py-4"
+                accessibilityLabel="Tirar foto com câmera"
+              >
+                <Camera size={20} color={theme.foreground} />
+                <Text>Câmera</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={pickFromGallery}
+                className="flex-row items-center gap-3 px-4 py-4"
+                accessibilityLabel="Escolher da galeria"
+              >
+                <ImagePlus size={20} color={theme.foreground} />
+                <Text>Galeria</Text>
+              </TouchableOpacity>
+            </View>
+          </Pressable>
+        </Modal>
 
         {/* Scanner */}
         <Button
