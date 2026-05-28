@@ -1,6 +1,7 @@
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { Bell, Clock } from 'lucide-react-native';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
+import { ActivityIndicator, Modal, Platform, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Notifications from 'expo-notifications';
 
@@ -13,6 +14,13 @@ import { useAuth } from '@/contexts/auth';
 import { rescheduleAllNotifications } from '@/features/notifications/scheduler';
 import { useProfile, useUpdateProfile } from '@/features/profile/queries';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import {
+  DEFAULT_ALERT_HOUR,
+  DEFAULT_ALERT_MINUTE,
+  formatAlertTime,
+  getAlertTime,
+  saveAlertTime,
+} from '@/lib/alertTime';
 import { getTheme } from '@/lib/theme';
 
 const WARNING_OPTIONS = [3, 5, 7, 10, 14, 30];
@@ -28,16 +36,31 @@ export default function SettingsScreen() {
 
   const [warningDays, setWarningDays] = useState(5);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [alertHour, setAlertHour] = useState(DEFAULT_ALERT_HOUR);
+  const [alertMinute, setAlertMinute] = useState(DEFAULT_ALERT_MINUTE);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+
   const initialized = useRef(false);
+  const initialAlertRef = useRef({ hour: DEFAULT_ALERT_HOUR, minute: DEFAULT_ALERT_MINUTE });
 
   useEffect(() => {
     if (!profile || initialized.current) return;
     setWarningDays(profile.warning_days_before_expiry);
     setNotificationsEnabled(profile.notifications_enabled);
+    getAlertTime().then(({ hour, minute }) => {
+      setAlertHour(hour);
+      setAlertMinute(minute);
+      initialAlertRef.current = { hour, minute };
+    });
     initialized.current = true;
   }, [profile]);
 
-  function save() {
+  const alertDate = new Date();
+  alertDate.setHours(alertHour, alertMinute, 0, 0);
+
+  async function save() {
+    await saveAlertTime(alertHour, alertMinute);
+    initialAlertRef.current = { hour: alertHour, minute: alertMinute };
     updateProfile(
       { warning_days_before_expiry: warningDays, notifications_enabled: notificationsEnabled },
       {
@@ -64,7 +87,9 @@ export default function SettingsScreen() {
   const dirty =
     profile &&
     (warningDays !== profile.warning_days_before_expiry ||
-      notificationsEnabled !== profile.notifications_enabled);
+      notificationsEnabled !== profile.notifications_enabled ||
+      alertHour !== initialAlertRef.current.hour ||
+      alertMinute !== initialAlertRef.current.minute);
 
   return (
     <ScrollView
@@ -146,7 +171,7 @@ export default function SettingsScreen() {
               </View>
               <View>
                 <Text className="font-semibold">Notificações diárias</Text>
-                <Text className="text-xs text-muted-foreground">Alertas de validade às 09:00</Text>
+                <Text className="text-xs text-muted-foreground">Alertas de validade</Text>
               </View>
             </View>
             <ToggleSwitch
@@ -155,6 +180,34 @@ export default function SettingsScreen() {
               accessibilityLabel="Ativar notificações"
             />
           </View>
+
+          <Separator />
+
+          <Pressable
+            onPress={() => setShowTimePicker(true)}
+            accessibilityLabel="Alterar horário do alerta"
+            className="flex-row items-center justify-between px-4 py-4 active:opacity-70"
+          >
+            <View className="flex-row items-center gap-3">
+              <View
+                className="h-9 w-9 items-center justify-center rounded-xl"
+                style={{ backgroundColor: theme.accent }}
+              >
+                <Clock size={18} color={theme.accentForeground} />
+              </View>
+              <View>
+                <Text className="font-semibold">Horário do alerta</Text>
+                <Text className="text-xs text-muted-foreground">
+                  Horário diário das notificações
+                </Text>
+              </View>
+            </View>
+            <View className="rounded-full px-2.5 py-1" style={{ backgroundColor: theme.accent }}>
+              <Text className="text-sm font-bold" style={{ color: theme.accentForeground }}>
+                {formatAlertTime(alertHour, alertMinute)}
+              </Text>
+            </View>
+          </Pressable>
         </Card>
       </View>
 
@@ -174,6 +227,64 @@ export default function SettingsScreen() {
           </Text>
         )}
       </View>
+
+      {/* Time picker — Android: dialog nativo; iOS: modal com spinner */}
+      {showTimePicker && Platform.OS === 'android' && (
+        <DateTimePicker
+          mode="time"
+          value={alertDate}
+          is24Hour
+          onValueChange={(_, date) => {
+            setShowTimePicker(false);
+            setAlertHour(date.getHours());
+            setAlertMinute(date.getMinutes());
+          }}
+          onDismiss={() => setShowTimePicker(false)}
+        />
+      )}
+
+      <Modal
+        visible={showTimePicker && Platform.OS === 'ios'}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowTimePicker(false)}
+      >
+        <Pressable
+          className="flex-1 justify-end"
+          style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}
+          onPress={() => setShowTimePicker(false)}
+        >
+          <Pressable
+            className="rounded-t-3xl border-t border-border pb-4 pt-2"
+            style={{ backgroundColor: theme.card }}
+            onPress={() => {}}
+          >
+            <View className="items-center pb-2 pt-1">
+              <View className="h-1 w-10 rounded-full" style={{ backgroundColor: theme.border }} />
+            </View>
+            <DateTimePicker
+              mode="time"
+              value={alertDate}
+              is24Hour
+              display="spinner"
+              onValueChange={(_, date) => {
+                setAlertHour(date.getHours());
+                setAlertMinute(date.getMinutes());
+              }}
+              style={{ height: 180 }}
+            />
+            <View className="px-4 pt-2">
+              <Button
+                className="w-full"
+                accessibilityLabel="Confirmar horário"
+                onPress={() => setShowTimePicker(false)}
+              >
+                <Text className="font-semibold">Confirmar</Text>
+              </Button>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </ScrollView>
   );
 }
