@@ -12,7 +12,6 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
-    "new:screen": "tsx ./scripts/new-screen.ts",
     "prepare": "husky"
   },
   "dependencies": {

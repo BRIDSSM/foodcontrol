@@ -8,7 +8,7 @@ Guia para quem está começando em React Native + Expo. Mostra como fazer as tr�
 
 ## Sumário
 
-1. [Como criar uma nova tela (atalho automatizado)](#1-criar-uma-nova-tela)
+1. [Como criar uma nova tela](#1-criar-uma-nova-tela)
 2. [Como funciona a navegação (`expo-router`)](#2-navegação)
 3. [Como gerenciar estado](#3-estado)
 4. [Theming (ThemedText / ThemedView)](#4-theming)
@@ -18,30 +18,7 @@ Guia para quem está começando em React Native + Expo. Mostra como fazer as tr�
 
 ## 1. Criar uma nova tela
 
-Existe um gerador para isso. Use sempre que for adicionar uma tela nova — garante template padronizado e evita esquecer imports.
-
-```bash
-npm run new:screen -- profile
-# → app/profile.tsx (rota: /profile)
-
-npm run new:screen -- recipes/[id]
-# → app/recipes/[id].tsx (rota dinâmica: /recipes/123)
-
-npm run new:screen -- (tabs)/settings
-# → app/(tabs)/settings.tsx (vira aba dentro do grupo (tabs))
-```
-
-O arquivo gerado já vem com:
-
-- Componente default exportado (nome convertido pra PascalCase + `Screen`).
-- Exemplo de `useState` (estado local).
-- Exemplo de `useLocalSearchParams` (lê params da rota).
-- Exemplo de `<Link>` (navegação declarativa) e `router.push` (imperativa).
-- `ThemedText` / `ThemedView` para respeitar light/dark mode.
-
-Apague os blocos de exemplo que você não vai usar.
-
-O template fica em `templates/screen.tsx.template`. Edite quando quiser mudar o boilerplate base — todas as próximas telas geradas vão refletir a mudança.
+Crie um arquivo `.tsx` na pasta `app/` seguindo a estrutura de rotas do `expo-router`. Não use geradores nem templates, apenas crie o componente diretamente com os imports e padrões do projeto.
 
 ---
 
@@ -299,14 +276,14 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 
 ## Cheatsheet
 
-| Quero...                | Faça                                                   |
-| ----------------------- | ------------------------------------------------------ |
-| Criar tela nova         | `npm run new:screen -- nome`                           |
-| Adicionar tela como aba | `npm run new:screen -- (tabs)/nome` + ajusta `_layout` |
-| Tela com param dinâmico | `npm run new:screen -- coisa/[id]`                     |
-| Navegar com link        | `<Link href="/rota">`                                  |
-| Navegar via código      | `router.push('/rota')`                                 |
-| Ler param da rota       | `useLocalSearchParams<{ id: string }>()`               |
-| Estado de uma tela      | `useState`                                             |
-| Estado global leve      | `Context`                                              |
-| Cache de API            | (instalar TanStack Query quando precisar)              |
+| Quero...                | Faça                                             |
+| ----------------------- | ------------------------------------------------ |
+| Criar tela nova         | Crie `.tsx` diretamente em `app/`                |
+| Adicionar tela como aba | Crie em `app/(tabs)/nome.tsx` + ajusta `_layout` |
+| Tela com param dinâmico | Crie `app/rota/[id].tsx`                         |
+| Navegar com link        | `<Link href="/rota">`                            |
+| Navegar via código      | `router.push('/rota')`                           |
+| Ler param da rota       | `useLocalSearchParams<{ id: string }>()`         |
+| Estado de uma tela      | `useState`                                       |
+| Estado global leve      | `Context`                                        |
+| Cache de API            | (instalar TanStack Query quando precisar)        |
