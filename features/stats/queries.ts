@@ -99,6 +99,67 @@ function aggregate(rows: Tables<'product_removals'>[]): StatsData {
   };
 }
 
+const MONTH_LABELS_PT = [
+  'Jan',
+  'Fev',
+  'Mar',
+  'Abr',
+  'Mai',
+  'Jun',
+  'Jul',
+  'Ago',
+  'Set',
+  'Out',
+  'Nov',
+  'Dez',
+];
+
+export type MonthlyUtilization = {
+  month: string;
+  rate: number;
+  total: number;
+};
+
+function buildMonthlyData(
+  rows: Pick<Tables<'product_removals'>, 'destination' | 'removed_at'>[],
+): MonthlyUtilization[] {
+  const now = new Date();
+  return Array.from({ length: 6 }, (_, i) => {
+    const date = subMonths(now, 5 - i);
+    const y = date.getFullYear();
+    const m = date.getMonth();
+    const monthRows = rows.filter((r) => {
+      const d = new Date(r.removed_at);
+      return d.getFullYear() === y && d.getMonth() === m;
+    });
+    const consumed = monthRows.filter((r) => r.destination === 'consumido').length;
+    const total = monthRows.length;
+    return {
+      month: MONTH_LABELS_PT[m],
+      rate: total > 0 ? Math.round((consumed / total) * 100) : 0,
+      total,
+    };
+  });
+}
+
+export function useMonthlyUtilization() {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ['stats', 'monthly', user?.id],
+    queryFn: async () => {
+      const start = subMonths(new Date(), 6).toISOString();
+      const { data, error } = await supabase
+        .from('product_removals')
+        .select('destination, removed_at')
+        .eq('user_id', user!.id)
+        .gte('removed_at', start);
+      if (error) throw error;
+      return buildMonthlyData(data ?? []);
+    },
+    enabled: !!user,
+  });
+}
+
 export function useStats(period: Period) {
   const { user } = useAuth();
   return useQuery({

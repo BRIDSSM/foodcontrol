@@ -12,10 +12,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CategoryBar } from '@/components/stats/category-bar';
 import { MetricCard } from '@/components/stats/metric-card';
+import { MonthlyChart } from '@/components/stats/monthly-chart';
 import { StatsEmptyState } from '@/components/stats/stats-empty-state';
 import { Separator } from '@/components/ui/separator';
 import { Text } from '@/components/ui/text';
-import { PERIOD_LABELS, useStats, type Period } from '@/features/stats/queries';
+import {
+  PERIOD_LABELS,
+  useMonthlyUtilization,
+  useStats,
+  type Period,
+} from '@/features/stats/queries';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { getTheme, STATUS_COLORS } from '@/lib/theme';
 
@@ -28,6 +34,7 @@ export default function StatsScreen() {
 
   const [period, setPeriod] = useState<Period>('7d');
   const { data: stats, isLoading, refetch } = useStats(period);
+  const { data: monthlyData } = useMonthlyUtilization();
   const [isPullRefreshing, setIsPullRefreshing] = useState(false);
 
   async function handleRefresh() {
@@ -199,6 +206,20 @@ export default function StatsScreen() {
             ) : null}
           </>
         )}
+
+        {/* Aproveitamento mensal — últimos 6 meses */}
+        {monthlyData ? (
+          <View className="gap-3 rounded-xl border border-border bg-card p-4">
+            <Text className="font-semibold">Aproveitamento mensal</Text>
+            <Text className="text-xs text-muted-foreground">Últimos 6 meses</Text>
+            <MonthlyChart
+              data={monthlyData}
+              color={palette.safe}
+              gridColor={theme.border}
+              labelColor={theme.mutedForeground}
+            />
+          </View>
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );
