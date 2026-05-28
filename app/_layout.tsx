@@ -7,7 +7,7 @@ import * as Notifications from 'expo-notifications';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import { View } from 'react-native';
+import { LogBox, View } from 'react-native';
 import 'react-native-reanimated';
 
 import * as SecureStore from 'expo-secure-store';
@@ -20,6 +20,8 @@ import {
 } from '@/features/notifications/permissions';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { getTheme, NAV_THEME } from '@/lib/theme';
+
+LogBox.ignoreLogs(['Unable to activate keep awake']);
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -41,15 +43,18 @@ function AuthGuard() {
 
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  useEffect(() => {
     SecureStore.getItemAsync(ONBOARDING_KEY).then((val) => {
       setHasSeenOnboarding(val === 'true');
     });
-  }, []);
+  }, [segments]);
 
   useEffect(() => {
     if (!mounted || isLoading || hasSeenOnboarding === null) return;
 
-    if (!hasSeenOnboarding && segments[0] !== 'onboarding') {
+    if (!hasSeenOnboarding && segments[0] !== 'onboarding' && segments[0] !== '(auth)') {
       router.replace('/onboarding');
       return;
     }
