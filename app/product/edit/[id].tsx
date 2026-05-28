@@ -1,5 +1,5 @@
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { zodResolver } from '@hookform/resolvers/zod';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
@@ -32,6 +32,7 @@ import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/ui/form-field';
 import { Text } from '@/components/ui/text';
 import { CATEGORY_LABELS } from '@/constants/labels';
+import { useAuth } from '@/contexts/auth';
 import { useUpdateProduct } from '@/features/inventory/mutations';
 import { useProduct } from '@/features/inventory/queries';
 import {
@@ -40,11 +41,10 @@ import {
   isSupabaseStorageUrl,
   uploadProductImage,
 } from '@/features/storage/upload';
-import { useAuth } from '@/contexts/auth';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { diffInDays, formatDate } from '@/lib/date';
 import { getTheme } from '@/lib/theme';
-import { productSchema, type ProductFormData, CATEGORIES } from '@/schemas/product';
+import { CATEGORIES, productSchema, type ProductFormData } from '@/schemas/product';
 import { useScanStore } from '@/stores/scan';
 import type { Enums } from '@/types/database';
 
@@ -436,7 +436,7 @@ export default function EditProductScreen() {
                 <View className="flex-row items-center gap-1">
                   <TriangleAlert size={12} color={theme.destructive} />
                   <Text className="text-xs text-muted-foreground">
-                    Data no passado — produto já vencido
+                    Data no passado, produto já vencido
                   </Text>
                 </View>
               )}
