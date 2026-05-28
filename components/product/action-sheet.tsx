@@ -26,7 +26,8 @@ export function ActionSheet({ product, destination, visible, onClose }: ActionSh
   const [quantityText, setQuantityText] = useState(String(product.quantity));
 
   const qty = parseFloat(quantityText.replace(',', '.'));
-  const valid = !isNaN(qty) && qty > 0;
+  const exceedsStock = !isNaN(qty) && qty > product.quantity;
+  const valid = !isNaN(qty) && qty > 0 && !exceedsStock;
 
   const isConsume = destination === 'consumido';
   const accentColor = isConsume ? palette.safe : palette.expired;
@@ -67,7 +68,13 @@ export function ActionSheet({ product, destination, visible, onClose }: ActionSh
             </Text>
 
             {/* Quantidade */}
-            <Text className="mb-1.5 text-sm font-medium">Quantidade</Text>
+            <View className="mb-1.5 flex-row items-center justify-between">
+              <Text className="text-sm font-medium">Quantidade</Text>
+              <Text className="text-xs text-muted-foreground">
+                Disponível:{' '}
+                {product.quantity % 1 === 0 ? product.quantity : product.quantity.toFixed(2)}
+              </Text>
+            </View>
             <TextInput
               value={quantityText}
               onChangeText={setQuantityText}
@@ -75,16 +82,22 @@ export function ActionSheet({ product, destination, visible, onClose }: ActionSh
               autoFocus
               style={{
                 borderWidth: 1,
-                borderColor: theme.border,
+                borderColor: exceedsStock ? palette.expired : theme.border,
                 borderRadius: 8,
                 paddingHorizontal: 12,
                 paddingVertical: Platform.OS === 'ios' ? 10 : 8,
                 fontSize: 16,
                 color: theme.foreground,
                 backgroundColor: theme.background,
-                marginBottom: 24,
               }}
             />
+            {exceedsStock ? (
+              <Text className="mb-6 mt-1.5 text-xs" style={{ color: palette.expired }}>
+                Quantidade maior do que o estoque disponível
+              </Text>
+            ) : (
+              <View className="mb-6" />
+            )}
 
             <Button
               className="w-full"
