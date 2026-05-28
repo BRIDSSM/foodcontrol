@@ -13,6 +13,7 @@ import {
   FlatList,
   Modal,
   Pressable,
+  RefreshControl,
   ScrollView,
   TextInput,
   TouchableOpacity,
@@ -72,6 +73,13 @@ export default function HomeScreen() {
   const [showFilterModal, setShowFilterModal] = useState(false);
 
   const { data: products = [], isLoading, refetch } = useProducts();
+  const [isPullRefreshing, setIsPullRefreshing] = useState(false);
+
+  async function handleRefresh() {
+    setIsPullRefreshing(true);
+    await refetch();
+    setIsPullRefreshing(false);
+  }
 
   useFocusEffect(
     useCallback(() => {
@@ -367,6 +375,14 @@ export default function HomeScreen() {
         ItemSeparatorComponent={() => <View className="h-2" />}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        refreshControl={
+          <RefreshControl
+            refreshing={isPullRefreshing}
+            onRefresh={handleRefresh}
+            colors={[theme.primary]}
+            tintColor={theme.primary}
+          />
+        }
       />
 
       {/* FAB */}
