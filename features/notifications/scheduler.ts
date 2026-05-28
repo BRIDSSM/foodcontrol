@@ -28,17 +28,17 @@ function computeTriggers(name: string, expirationDateStr: string, warningDays: n
     {
       date: at9(addDays(expiry, -warningDays)),
       kind: 'warning',
-      body: `🟡 Vence em ${warningDays} dias — consuma em breve`,
+      body: `Vence em ${warningDays} dias, consuma em breve`,
     },
     {
       date: at9(expiry),
       kind: 'expiry',
-      body: `🔴 Vence hoje — verifique seu estoque`,
+      body: `Vence hoje, verifique seu estoque`,
     },
     {
       date: at9(addDays(expiry, 1)),
       kind: 'expired',
-      body: `⚠️ Venceu ontem — descarte ou registre o consumo`,
+      body: `Venceu ontem, descarte ou registre o consumo`,
     },
   ];
 
