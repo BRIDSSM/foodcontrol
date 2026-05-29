@@ -4,7 +4,7 @@ import Svg, { Circle, Line, Path, Text as SvgText } from 'react-native-svg';
 
 import type { MonthlyUtilization } from '@/features/stats/queries';
 
-const PAD = { top: 20, right: 12, bottom: 28, left: 38 };
+const PAD = { top: 20, right: 12, bottom: 28, left: 42 };
 const CHART_H = 160;
 const GRID_RATES = [0, 50, 100];
 
@@ -58,13 +58,13 @@ export function MonthlyChart({ data, color, gridColor, labelColor }: Props) {
         {GRID_RATES.map((rate) => (
           <SvgText
             key={`yl-${rate}`}
-            x={PAD.left - 4}
+            x={PAD.left - 14}
             y={yAt(rate) + 4}
             fontSize={9}
             fill={labelColor}
             textAnchor="end"
           >
-            {rate}%
+            {`${rate}%`}
           </SvgText>
         ))}
 
