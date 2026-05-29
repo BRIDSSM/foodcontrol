@@ -228,7 +228,7 @@ export default function SettingsScreen() {
         )}
       </View>
 
-      {/* Time picker — Android: dialog nativo; iOS: modal com spinner */}
+      {/* Time picker - Android: dialog nativo; iOS: modal com spinner */}
       {showTimePicker && Platform.OS === 'android' && (
         <DateTimePicker
           mode="time"

@@ -207,7 +207,7 @@ export default function StatsScreen() {
           </>
         )}
 
-        {/* Aproveitamento mensal — últimos 6 meses */}
+        {/* Aproveitamento mensal - últimos 6 meses */}
         {monthlyData ? (
           <View className="gap-3 rounded-xl border border-border bg-card p-4">
             <Text className="font-semibold">Aproveitamento mensal</Text>

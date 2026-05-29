@@ -20,9 +20,3 @@ export const LOCATION_LABELS: Record<Enums<'storage_location'>, string> = {
   geladeira: 'Geladeira',
   congelador: 'Congelador',
 };
-
-export const LOCATION_ICONS: Record<Enums<'storage_location'>, string> = {
-  despensa: '🗄️',
-  geladeira: '❄️',
-  congelador: '🧊',
-};

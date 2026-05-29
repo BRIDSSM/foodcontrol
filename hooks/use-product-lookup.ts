@@ -75,7 +75,7 @@ async function lookupWithCache(gtin: string, signal: AbortSignal): Promise<Cosmo
     return cached.raw_response as unknown as CosmosProduct;
   }
 
-  // 2. Cache miss — consulta API
+  // 2. Cache miss - consulta API
   const product = await fetchCosmosProduct(gtin, signal);
 
   // 3. Salva no cache em background (não aguarda, não bloqueia)

@@ -228,7 +228,7 @@ function ProductView({ product }: { product: CosmosProduct }) {
           />
         ) : null}
         {product.ncm ? (
-          <DetailItem label="NCM" value={`${product.ncm.code} — ${product.ncm.description}`} />
+          <DetailItem label="NCM" value={`${product.ncm.code} - ${product.ncm.description}`} />
         ) : null}
         {product.net_weight ? (
           <DetailItem label="Peso líquido" value={`${product.net_weight} g`} />
