@@ -1,6 +1,6 @@
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
-import { Camera, ImagePlus } from 'lucide-react-native';
+import { Camera, ImagePlus, TriangleAlert } from 'lucide-react-native';
 import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -35,6 +35,7 @@ export default function EditProfileScreen() {
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
   const [showImageOptions, setShowImageOptions] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const initialized = useRef(false);
 
   useEffect(() => {
@@ -71,6 +72,7 @@ export default function EditProfileScreen() {
 
   async function handleSave() {
     if (!user || !name.trim()) return;
+    setError(null);
     setIsSaving(true);
     try {
       let finalAvatarUrl = avatarUri;
@@ -81,11 +83,13 @@ export default function EditProfileScreen() {
         { full_name: name.trim(), avatar_url: finalAvatarUrl },
         {
           onSuccess: () => router.back(),
+          onError: () => setError('Não foi possível salvar o perfil. Tente novamente.'),
           onSettled: () => setIsSaving(false),
         },
       );
     } catch {
       setIsSaving(false);
+      setError('Não foi possível enviar a imagem. Tente novamente.');
     }
   }
 
@@ -138,6 +142,14 @@ export default function EditProfileScreen() {
           />
         </View>
       </View>
+
+      {/* Erro */}
+      {error ? (
+        <View className="flex-row items-center gap-3 rounded-xl bg-destructive/10 px-4 py-3">
+          <TriangleAlert size={16} color={theme.destructive} />
+          <Text className="flex-1 text-sm text-destructive">{error}</Text>
+        </View>
+      ) : null}
 
       {/* Salvar */}
       <Button
