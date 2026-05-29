@@ -4,6 +4,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import { supabase } from '@/lib/supabase';
 
 const BUCKET = 'product-images';
+const AVATAR_BUCKET = 'avatars';
 
 export function isLocalUri(uri: string): boolean {
   return uri.startsWith('file://') || uri.startsWith('content://') || !uri.startsWith('http');
@@ -57,13 +58,13 @@ export async function downloadAndUploadImage(remoteUrl: string, userId: string):
 export async function uploadAvatarImage(localUri: string, userId: string): Promise<string> {
   const ext = localUri.split('.').pop()?.toLowerCase() ?? 'jpg';
   const safeExt = ['jpg', 'jpeg', 'png', 'webp'].includes(ext) ? ext : 'jpg';
-  const path = `avatars/${userId}/${Date.now()}.${safeExt}`;
+  const path = `${userId}/${Date.now()}.${safeExt}`;
 
   const base64 = await FileSystem.readAsStringAsync(localUri, {
     encoding: FileSystem.EncodingType.Base64,
   });
 
-  const { data, error } = await supabase.storage.from(BUCKET).upload(path, decode(base64), {
+  const { data, error } = await supabase.storage.from(AVATAR_BUCKET).upload(path, decode(base64), {
     contentType: `image/${safeExt === 'jpg' ? 'jpeg' : safeExt}`,
     upsert: false,
   });
@@ -72,7 +73,7 @@ export async function uploadAvatarImage(localUri: string, userId: string): Promi
 
   const {
     data: { publicUrl },
-  } = supabase.storage.from(BUCKET).getPublicUrl(data.path);
+  } = supabase.storage.from(AVATAR_BUCKET).getPublicUrl(data.path);
 
   return publicUrl;
 }
