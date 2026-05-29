@@ -41,12 +41,15 @@ import {
   isSupabaseStorageUrl,
   uploadProductImage,
 } from '@/features/storage/upload';
+import { useProductLookup } from '@/hooks/use-product-lookup';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { diffInDays, formatDate } from '@/lib/date';
 import { getTheme } from '@/lib/theme';
 import { CATEGORIES, productSchema, type ProductFormData } from '@/schemas/product';
+import { mapCosmosToCategory } from '@/services/cosmos';
 import { useScanStore } from '@/stores/scan';
 import type { Enums } from '@/types/database';
+import { isValidGS1 } from '@/utils/barcode';
 
 const LOCATION_CHIPS: {
   key: Enums<'storage_location'>;
@@ -69,6 +72,9 @@ export default function EditProductScreen() {
 
   const scanData = useScanStore((s) => s.data);
   const clearScan = useScanStore((s) => s.clear);
+
+  const { state: barcodeState, lookup: lookupBarcode } = useProductLookup();
+  const [barcodeInvalid, setBarcodeInvalid] = useState(false);
 
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -99,6 +105,14 @@ export default function EditProductScreen() {
       image_url: product.image_url ?? undefined,
     });
   }, [product?.id]);
+
+  useEffect(() => {
+    if (barcodeState.status !== 'success') return;
+    const p = barcodeState.product;
+    if (!form.getValues('name')) form.setValue('name', p.description ?? '');
+    form.setValue('category', mapCosmosToCategory(p.category?.description));
+    if (p.thumbnail && !form.getValues('image_url')) form.setValue('image_url', p.thumbnail);
+  }, [barcodeState]);
 
   // Atualiza campos se veio do scanner
   useFocusEffect(
@@ -316,15 +330,49 @@ export default function EditProductScreen() {
           control={form.control}
           name="barcode"
           render={({ field }) => (
-            <FormField
-              label="Código de barras"
-              nativeID="edit-barcode"
-              placeholder="Preenchido pelo scanner ou manual"
-              value={field.value}
-              onChangeText={field.onChange}
-              onBlur={field.onBlur}
-              keyboardType="numeric"
-            />
+            <View className="gap-1">
+              <FormField
+                label="Código de barras"
+                nativeID="edit-barcode"
+                placeholder="Preenchido pelo scanner ou manual"
+                value={field.value}
+                onChangeText={(v) => {
+                  field.onChange(v);
+                  setBarcodeInvalid(false);
+                }}
+                onBlur={() => {
+                  field.onBlur();
+                  const val = form.getValues('barcode');
+                  if (!val) return;
+                  if (isValidGS1(val)) {
+                    lookupBarcode(val);
+                  } else {
+                    setBarcodeInvalid(true);
+                  }
+                }}
+                keyboardType="numeric"
+              />
+              {barcodeInvalid && (
+                <View className="flex-row items-center gap-1">
+                  <TriangleAlert size={12} color={theme.destructive} />
+                  <Text className="text-xs text-destructive">Código de barras inválido.</Text>
+                </View>
+              )}
+              {!barcodeInvalid && barcodeState.status === 'loading' && (
+                <View className="flex-row items-center gap-2">
+                  <ActivityIndicator size="small" color={theme.primary} />
+                  <Text className="text-xs text-muted-foreground">Buscando produto...</Text>
+                </View>
+              )}
+              {!barcodeInvalid && barcodeState.status === 'success' && (
+                <Text className="text-xs text-primary">Dados preenchidos automaticamente.</Text>
+              )}
+              {!barcodeInvalid && barcodeState.status === 'error' && (
+                <Text className="text-xs text-muted-foreground">
+                  Produto não encontrado, preencha manualmente.
+                </Text>
+              )}
+            </View>
           )}
         />
 
