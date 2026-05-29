@@ -18,7 +18,12 @@ import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { useAuth } from '@/contexts/auth';
 import { useProfile, useUpdateProfile } from '@/features/profile/queries';
-import { isLocalUri, uploadAvatarImage } from '@/features/storage/upload';
+import {
+  deleteAvatarImage,
+  isLocalUri,
+  isSupabaseStorageUrl,
+  uploadAvatarImage,
+} from '@/features/storage/upload';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { getTheme } from '@/lib/theme';
 import { initials } from '@/lib/utils';
@@ -76,9 +81,17 @@ export default function EditProfileScreen() {
     setIsSaving(true);
     try {
       let finalAvatarUrl = avatarUri;
+      const oldUrl = profile?.avatar_url ?? null;
+
       if (avatarUri && isLocalUri(avatarUri)) {
         finalAvatarUrl = await uploadAvatarImage(avatarUri, user.id);
+        if (oldUrl && isSupabaseStorageUrl(oldUrl)) {
+          deleteAvatarImage(oldUrl).catch(() => {});
+        }
+      } else if (avatarUri === null && oldUrl && isSupabaseStorageUrl(oldUrl)) {
+        deleteAvatarImage(oldUrl).catch(() => {});
       }
+
       updateProfile(
         { full_name: name.trim(), avatar_url: finalAvatarUrl },
         {

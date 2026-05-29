@@ -79,10 +79,17 @@ export async function uploadAvatarImage(localUri: string, userId: string): Promi
 }
 
 export async function deleteProductImage(publicUrl: string): Promise<void> {
-  // Extrai o path do bucket a partir da URL pública
   const marker = `/${BUCKET}/`;
   const idx = publicUrl.indexOf(marker);
   if (idx === -1) return;
   const path = publicUrl.slice(idx + marker.length);
   await supabase.storage.from(BUCKET).remove([path]);
+}
+
+export async function deleteAvatarImage(publicUrl: string): Promise<void> {
+  const marker = `/${AVATAR_BUCKET}/`;
+  const idx = publicUrl.indexOf(marker);
+  if (idx === -1) return;
+  const path = publicUrl.slice(idx + marker.length);
+  await supabase.storage.from(AVATAR_BUCKET).remove([path]);
 }
