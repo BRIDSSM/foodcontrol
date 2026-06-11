@@ -4,7 +4,9 @@ import { Camera, ImagePlus, TriangleAlert } from 'lucide-react-native';
 import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   TextInput,
@@ -109,119 +111,124 @@ export default function EditProfileScreen() {
   const loading = isSaving || isPending;
 
   return (
-    <ScrollView
+    <KeyboardAvoidingView
       className="flex-1 bg-background"
-      contentContainerStyle={{ padding: 16, gap: 24, paddingBottom: 40 + insets.bottom }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      {/* Avatar */}
-      <View className="items-center gap-2 pt-4">
-        <Pressable
-          onPress={() => setShowImageOptions(true)}
-          accessibilityLabel="Alterar foto de perfil"
-          className="relative"
-        >
-          <Avatar alt="Foto do perfil" className="h-24 w-24">
-            {avatarUri ? <AvatarImage source={{ uri: avatarUri }} /> : null}
-            <AvatarFallback>
-              <Text className="text-3xl font-semibold">
-                {initials(name || (profile?.full_name ?? ''))}
-              </Text>
-            </AvatarFallback>
-          </Avatar>
-          <View
-            className="absolute bottom-0 right-0 h-7 w-7 items-center justify-center rounded-full"
-            style={{ backgroundColor: theme.primary }}
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ padding: 16, gap: 24, paddingBottom: 40 + insets.bottom }}
+      >
+        {/* Avatar */}
+        <View className="items-center gap-2 pt-4">
+          <Pressable
+            onPress={() => setShowImageOptions(true)}
+            accessibilityLabel="Alterar foto de perfil"
+            className="relative"
           >
-            <Camera size={14} color={theme.primaryForeground} />
-          </View>
-        </Pressable>
-        <Text className="text-xs text-muted-foreground">Toque para alterar a foto</Text>
-      </View>
-
-      {/* Nome */}
-      <View className="gap-2">
-        <Text className="px-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-          Nome
-        </Text>
-        <View className="rounded-xl border border-border bg-card px-4 py-3">
-          <TextInput
-            value={name}
-            onChangeText={setName}
-            placeholder="Seu nome"
-            placeholderTextColor={theme.mutedForeground}
-            style={{ color: theme.foreground, fontSize: 16 }}
-            autoCapitalize="words"
-            returnKeyType="done"
-          />
-        </View>
-      </View>
-
-      {/* Erro */}
-      {error ? (
-        <View className="flex-row items-center gap-3 rounded-xl bg-destructive/10 px-4 py-3">
-          <TriangleAlert size={16} color={theme.destructive} />
-          <Text className="flex-1 text-sm text-destructive">{error}</Text>
-        </View>
-      ) : null}
-
-      {/* Salvar */}
-      <Button
-        className="w-full"
-        accessibilityLabel="Salvar perfil"
-        onPress={handleSave}
-        disabled={!name.trim() || loading}
-      >
-        {loading ? (
-          <ActivityIndicator size="small" color={theme.primaryForeground} />
-        ) : (
-          <Text className="font-semibold">Salvar</Text>
-        )}
-      </Button>
-
-      {/* Modal seleção de avatar */}
-      <Modal
-        visible={showImageOptions}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowImageOptions(false)}
-      >
-        <Pressable className="flex-1 bg-black/50" onPress={() => setShowImageOptions(false)}>
-          <View className="absolute bottom-0 left-0 right-0 rounded-t-2xl bg-card pb-8">
-            <View className="items-center py-3">
-              <View className="h-1 w-10 rounded-full bg-muted-foreground/30" />
+            <Avatar alt="Foto do perfil" className="h-24 w-24">
+              {avatarUri ? <AvatarImage source={{ uri: avatarUri }} /> : null}
+              <AvatarFallback>
+                <Text className="text-3xl font-semibold">
+                  {initials(name || (profile?.full_name ?? ''))}
+                </Text>
+              </AvatarFallback>
+            </Avatar>
+            <View
+              className="absolute bottom-0 right-0 h-7 w-7 items-center justify-center rounded-full"
+              style={{ backgroundColor: theme.primary }}
+            >
+              <Camera size={14} color={theme.primaryForeground} />
             </View>
-            <Text className="px-4 pb-3 text-base font-semibold">Foto de perfil</Text>
-            <TouchableOpacity
-              onPress={pickFromCamera}
-              className="flex-row items-center gap-3 px-4 py-4"
-              accessibilityLabel="Tirar foto com câmera"
-            >
-              <Camera size={20} color={theme.foreground} />
-              <Text>Câmera</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={pickFromGallery}
-              className="flex-row items-center gap-3 px-4 py-4"
-              accessibilityLabel="Escolher da galeria"
-            >
-              <ImagePlus size={20} color={theme.foreground} />
-              <Text>Galeria</Text>
-            </TouchableOpacity>
-            {avatarUri ? (
-              <TouchableOpacity
-                onPress={() => {
-                  setAvatarUri(null);
-                  setShowImageOptions(false);
-                }}
-                className="flex-row items-center gap-3 px-4 py-4"
-                accessibilityLabel="Remover foto de perfil"
-              >
-                <Text className="text-destructive">Remover foto</Text>
-              </TouchableOpacity>
-            ) : null}
+          </Pressable>
+          <Text className="text-xs text-muted-foreground">Toque para alterar a foto</Text>
+        </View>
+
+        {/* Nome */}
+        <View className="gap-2">
+          <Text className="px-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            Nome
+          </Text>
+          <View className="rounded-xl border border-border bg-card px-4 py-3">
+            <TextInput
+              value={name}
+              onChangeText={setName}
+              placeholder="Seu nome"
+              placeholderTextColor={theme.mutedForeground}
+              style={{ color: theme.foreground, fontSize: 16 }}
+              autoCapitalize="words"
+              returnKeyType="done"
+            />
           </View>
-        </Pressable>
-      </Modal>
-    </ScrollView>
+        </View>
+
+        {/* Erro */}
+        {error ? (
+          <View className="flex-row items-center gap-3 rounded-xl bg-destructive/10 px-4 py-3">
+            <TriangleAlert size={16} color={theme.destructive} />
+            <Text className="flex-1 text-sm text-destructive">{error}</Text>
+          </View>
+        ) : null}
+
+        {/* Salvar */}
+        <Button
+          className="w-full"
+          accessibilityLabel="Salvar perfil"
+          onPress={handleSave}
+          disabled={!name.trim() || loading}
+        >
+          {loading ? (
+            <ActivityIndicator size="small" color={theme.primaryForeground} />
+          ) : (
+            <Text className="font-semibold">Salvar</Text>
+          )}
+        </Button>
+
+        {/* Modal seleção de avatar */}
+        <Modal
+          visible={showImageOptions}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setShowImageOptions(false)}
+        >
+          <Pressable className="flex-1 bg-black/50" onPress={() => setShowImageOptions(false)}>
+            <View className="absolute bottom-0 left-0 right-0 rounded-t-2xl bg-card pb-8">
+              <View className="items-center py-3">
+                <View className="h-1 w-10 rounded-full bg-muted-foreground/30" />
+              </View>
+              <Text className="px-4 pb-3 text-base font-semibold">Foto de perfil</Text>
+              <TouchableOpacity
+                onPress={pickFromCamera}
+                className="flex-row items-center gap-3 px-4 py-4"
+                accessibilityLabel="Tirar foto com câmera"
+              >
+                <Camera size={20} color={theme.foreground} />
+                <Text>Câmera</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={pickFromGallery}
+                className="flex-row items-center gap-3 px-4 py-4"
+                accessibilityLabel="Escolher da galeria"
+              >
+                <ImagePlus size={20} color={theme.foreground} />
+                <Text>Galeria</Text>
+              </TouchableOpacity>
+              {avatarUri ? (
+                <TouchableOpacity
+                  onPress={() => {
+                    setAvatarUri(null);
+                    setShowImageOptions(false);
+                  }}
+                  className="flex-row items-center gap-3 px-4 py-4"
+                  accessibilityLabel="Remover foto de perfil"
+                >
+                  <Text className="text-destructive">Remover foto</Text>
+                </TouchableOpacity>
+              ) : null}
+            </View>
+          </Pressable>
+        </Modal>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
