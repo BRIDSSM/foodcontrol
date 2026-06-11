@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/ui/form-field';
 import { Text } from '@/components/ui/text';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { translateAuthError } from '@/lib/auth-errors';
 import { supabase } from '@/lib/supabase';
 import { getTheme } from '@/lib/theme';
 
@@ -31,7 +32,7 @@ export default function LoginScreen() {
     setLoading(true);
     const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
-    if (authError) setError(authError.message);
+    if (authError) setError(translateAuthError(authError.message));
   }
 
   return (
