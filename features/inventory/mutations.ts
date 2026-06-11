@@ -6,6 +6,7 @@ import {
   cancelProductNotifications,
   scheduleProductNotifications,
 } from '@/features/notifications/scheduler';
+import { getAlertTime } from '@/lib/alertTime';
 import { inventoryKeys, type Product } from './queries';
 
 async function getProfileWithFallback(
@@ -35,11 +36,17 @@ export function useCreateProduct() {
     },
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: inventoryKeys.all });
-      getProfileWithFallback(qc, data.user_id).then((profile) => {
+      getProfileWithFallback(qc, data.user_id).then(async (profile) => {
         if (profile?.notifications_enabled) {
           if (__DEV__)
             console.log('[Mutations] Agendando notificações para novo produto:', data.name);
-          scheduleProductNotifications(data, profile.warning_days_before_expiry).catch((err) => {
+          const { hour, minute } = await getAlertTime();
+          scheduleProductNotifications(
+            data,
+            profile.warning_days_before_expiry,
+            hour,
+            minute,
+          ).catch((err) => {
             if (__DEV__) console.error('[Mutations] Erro ao agendar:', err);
           });
         } else if (__DEV__) {
@@ -66,10 +73,16 @@ export function useUpdateProduct() {
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: inventoryKeys.all });
       qc.invalidateQueries({ queryKey: inventoryKeys.detail(data.id) });
-      getProfileWithFallback(qc, data.user_id).then((profile) => {
+      getProfileWithFallback(qc, data.user_id).then(async (profile) => {
         if (profile?.notifications_enabled) {
           if (__DEV__) console.log('[Mutations] Reagendando notificações para produto:', data.name);
-          scheduleProductNotifications(data, profile.warning_days_before_expiry).catch((err) => {
+          const { hour, minute } = await getAlertTime();
+          scheduleProductNotifications(
+            data,
+            profile.warning_days_before_expiry,
+            hour,
+            minute,
+          ).catch((err) => {
             if (__DEV__) console.error('[Mutations] Erro ao reagendar:', err);
           });
         } else {
