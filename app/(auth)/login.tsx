@@ -1,5 +1,6 @@
+import { Image } from 'expo-image';
 import { Link } from 'expo-router';
-import { Eye, EyeOff, Leaf, Lock, Mail, TriangleAlert } from 'lucide-react-native';
+import { Eye, EyeOff, Lock, Mail, TriangleAlert } from 'lucide-react-native';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -53,7 +54,11 @@ export default function LoginScreen() {
                 className="h-20 w-20 items-center justify-center rounded-3xl"
                 style={{ backgroundColor: theme.primary }}
               >
-                <Leaf size={36} color={theme.primaryForeground} />
+                <Image
+                  source={require('@/assets/images/android-icon-monochrome.png')}
+                  style={{ width: 72, height: 72 }}
+                  contentFit="contain"
+                />
               </View>
               <View className="items-center gap-1">
                 <Text className="text-3xl font-bold tracking-tight">FoodControl</Text>
