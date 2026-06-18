@@ -1,13 +1,14 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Bell, Clock } from 'lucide-react-native';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Modal, Platform, Pressable, ScrollView, View } from 'react-native';
+import { Modal, Platform, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Notifications from 'expo-notifications';
 
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { SkeletonText } from '@/components/ui/skeletons';
 import { Text } from '@/components/ui/text';
 import { ToggleSwitch } from '@/components/ui/toggle-switch';
 import { useAuth } from '@/contexts/auth';
@@ -78,9 +79,68 @@ export default function SettingsScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-background">
-        <ActivityIndicator size="large" color={theme.primary} />
-      </View>
+      <ScrollView
+        className="flex-1 bg-background"
+        contentContainerStyle={{ padding: 16, gap: 24, paddingBottom: 40 + insets.bottom }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Alertas skeleton */}
+        <View className="gap-2">
+          <SkeletonText width={140} height={14} />
+          <View className="rounded-xl border border-border bg-card py-0">
+            <View className="flex-row items-center gap-3 px-4 py-4">
+              <SkeletonText width={36} height={36} className="rounded-xl" />
+              <View className="flex-1 gap-2">
+                <SkeletonText width="60%" height={16} />
+                <SkeletonText width="80%" height={12} />
+              </View>
+              <SkeletonText width={40} height={24} className="rounded-full" />
+            </View>
+            <Separator />
+            <View className="flex-row gap-2 px-4 py-3">
+              <SkeletonText width={60} height={32} className="rounded-full" />
+              <SkeletonText width={60} height={32} className="rounded-full" />
+              <SkeletonText width={60} height={32} className="rounded-full" />
+              <SkeletonText width={60} height={32} className="rounded-full" />
+              <SkeletonText width={60} height={32} className="rounded-full" />
+              <SkeletonText width={60} height={32} className="rounded-full" />
+            </View>
+          </View>
+        </View>
+
+        {/* Notificações skeleton */}
+        <View className="gap-2">
+          <SkeletonText width={120} height={14} />
+          <View className="rounded-xl border border-border bg-card py-0">
+            <View className="flex-row items-center justify-between px-4 py-4">
+              <View className="flex-row items-center gap-3">
+                <SkeletonText width={36} height={36} className="rounded-xl" />
+                <View className="gap-2">
+                  <SkeletonText width={120} height={16} />
+                  <SkeletonText width={100} height={12} />
+                </View>
+              </View>
+              <SkeletonText width={44} height={24} className="rounded-full" />
+            </View>
+            <Separator />
+            <View className="flex-row items-center justify-between px-4 py-4">
+              <View className="flex-row items-center gap-3">
+                <SkeletonText width={36} height={36} className="rounded-xl" />
+                <View className="gap-2">
+                  <SkeletonText width={120} height={16} />
+                  <SkeletonText width={100} height={12} />
+                </View>
+              </View>
+              <SkeletonText width={56} height={24} className="rounded-full" />
+            </View>
+          </View>
+        </View>
+
+        {/* Salvar skeleton */}
+        <View className="gap-2">
+          <SkeletonText width="100%" height={44} className="rounded-md" />
+        </View>
+      </ScrollView>
     );
   }
 
