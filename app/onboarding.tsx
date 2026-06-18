@@ -1,7 +1,8 @@
 import { router } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { BarChart3, Bell, PackageSearch } from 'lucide-react-native';
-import { View } from 'react-native';
+import { useState } from 'react';
+import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/button';
@@ -29,10 +30,14 @@ const FEATURES = [
 
 export default function OnboardingScreen() {
   const theme = getTheme(useColorScheme() ?? 'light');
+  const [isStarting, setIsStarting] = useState(false);
 
   async function handleStart() {
+    if (isStarting) return;
+    setIsStarting(true);
     await SecureStore.setItemAsync(ONBOARDING_KEY, 'true');
     router.replace('/(auth)/login');
+    setIsStarting(false);
   }
 
   return (
@@ -65,8 +70,17 @@ export default function OnboardingScreen() {
             ))}
           </View>
 
-          <Button className="w-full" onPress={handleStart} accessibilityLabel="Começar">
-            <Text className="font-semibold">Começar</Text>
+          <Button
+            className="w-full"
+            onPress={handleStart}
+            disabled={isStarting}
+            accessibilityLabel="Começar"
+          >
+            {isStarting ? (
+              <ActivityIndicator size="small" color={theme.primaryForeground} />
+            ) : (
+              <Text className="font-semibold">Começar</Text>
+            )}
           </Button>
         </View>
       </View>
