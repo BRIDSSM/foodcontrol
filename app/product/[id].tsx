@@ -13,7 +13,7 @@ import {
 } from 'lucide-react-native';
 
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ActionSheet } from '@/components/product/action-sheet';
@@ -21,6 +21,7 @@ import { InfoRow } from '@/components/product/info-row';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { SkeletonRect, SkeletonText } from '@/components/ui/skeletons';
 import { Text } from '@/components/ui/text';
 import { CATEGORY_LABELS, LOCATION_LABELS } from '@/constants/labels';
 import { useProduct } from '@/features/inventory/queries';
@@ -57,8 +58,74 @@ export default function ProductDetailScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-background">
-        <ActivityIndicator size="large" color={theme.primary} />
+      <View className="flex-1 bg-background">
+        <Stack.Screen
+          options={{
+            headerRight: () => (
+              <Pressable accessibilityLabel="Editar produto" style={{ padding: 4 }} disabled>
+                <Pencil size={20} color={theme.mutedForeground} />
+              </Pressable>
+            ),
+          }}
+        />
+        <ScrollView
+          className="flex-1"
+          contentContainerStyle={{ paddingBottom: 96 + insets.bottom }}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Hero skeleton */}
+          <SkeletonRect width="100%" height={240} />
+
+          <View className="gap-4 p-5">
+            {/* Nome + status skeleton */}
+            <View className="gap-2">
+              <View className="flex-row items-start justify-between gap-3">
+                <SkeletonText width="70%" height={28} />
+                <SkeletonText width={80} height={24} />
+              </View>
+              <SkeletonText width="40%" height={16} />
+            </View>
+
+            {/* Info card skeleton */}
+            <View className="rounded-xl border border-border bg-card">
+              <View className="flex-row gap-6 p-4">
+                <View className="flex-1 gap-2">
+                  <SkeletonText width="60%" height={12} />
+                  <SkeletonText width="80%" height={16} />
+                </View>
+                <View className="flex-1 gap-2">
+                  <SkeletonText width="60%" height={12} />
+                  <SkeletonText width="80%" height={16} />
+                </View>
+              </View>
+              <Separator />
+              <View className="flex-row gap-6 p-4">
+                <View className="flex-1 gap-2">
+                  <SkeletonText width="60%" height={12} />
+                  <SkeletonText width="80%" height={16} />
+                </View>
+                <View className="flex-1 gap-2">
+                  <SkeletonText width="60%" height={12} />
+                  <SkeletonText width="80%" height={16} />
+                </View>
+              </View>
+            </View>
+          </View>
+        </ScrollView>
+
+        {/* Footer skeleton */}
+        <View
+          className="absolute bottom-0 left-0 right-0 flex-row gap-2 px-5 pt-4"
+          style={{
+            paddingBottom: insets.bottom + 16,
+            backgroundColor: theme.background,
+            borderTopWidth: 1,
+            borderTopColor: theme.border,
+          }}
+        >
+          <SkeletonRect width="100%" height={40} className="flex-1 rounded-md" />
+          <SkeletonRect width="100%" height={40} className="flex-1 rounded-md" />
+        </View>
       </View>
     );
   }
