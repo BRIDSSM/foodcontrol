@@ -24,6 +24,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ProductCard } from '@/components/product/product-card';
 import { StatusChip } from '@/components/product/status-chip';
 import { EmptyState } from '@/components/ui/empty-state';
+import { SkeletonProductCard, SkeletonText } from '@/components/ui/skeletons';
 import { Text } from '@/components/ui/text';
 import EmptyInventoryIllustration from '@/assets/illustrations/empty-inventory.svg';
 import NoResultsIllustration from '@/assets/illustrations/no-results.svg';
@@ -339,8 +340,42 @@ export default function HomeScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-background" edges={['top']}>
-        <ActivityIndicator color={theme.primary} />
+      <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+        <ScrollView
+          contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 40 }}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Header skeleton */}
+          <View className="gap-2 pt-2">
+            <SkeletonText width={180} height={28} />
+            <SkeletonText width={140} height={16} />
+          </View>
+
+          {/* Status chips skeleton */}
+          <View className="flex-row gap-3">
+            <SkeletonText width={80} height={32} />
+            <SkeletonText width={80} height={32} />
+            <SkeletonText width={80} height={32} />
+          </View>
+
+          {/* Search bar skeleton */}
+          <View className="h-10 rounded-xl border border-input bg-muted" />
+
+          {/* Location chips skeleton */}
+          <View className="flex-row gap-2">
+            <SkeletonText width={60} height={28} />
+            <SkeletonText width={80} height={28} />
+            <SkeletonText width={80} height={28} />
+            <SkeletonText width={80} height={28} />
+          </View>
+
+          {/* Product cards skeleton */}
+          <View className="gap-2">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <SkeletonProductCard key={i} />
+            ))}
+          </View>
+        </ScrollView>
       </SafeAreaView>
     );
   }
