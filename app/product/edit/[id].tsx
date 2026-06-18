@@ -30,6 +30,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/ui/form-field';
+import { SkeletonRect, SkeletonText } from '@/components/ui/skeletons';
 import { Text } from '@/components/ui/text';
 import { CATEGORY_LABELS } from '@/constants/labels';
 import { useAuth } from '@/contexts/auth';
@@ -186,9 +187,67 @@ export default function EditProductScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-background">
-        <ActivityIndicator size="large" color={theme.primary} />
-      </View>
+      <KeyboardAvoidingView
+        className="flex-1 bg-background"
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <ScrollView
+          className="flex-1"
+          contentContainerStyle={{ gap: 20, padding: 16, paddingBottom: 40 + insets.bottom }}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Imagem skeleton */}
+          <View className="items-center gap-2">
+            <SkeletonRect width={140} height={140} className="rounded-2xl" />
+          </View>
+
+          {/* Botão scan skeleton */}
+          <SkeletonRect width="100%" height={40} className="rounded-md" />
+
+          {/* Nome skeleton */}
+          <View className="gap-1">
+            <SkeletonText width="100%" height={20} />
+            <SkeletonRect width="100%" height={44} />
+          </View>
+
+          {/* Barcode skeleton */}
+          <View className="gap-1">
+            <SkeletonText width="100%" height={20} />
+            <SkeletonRect width="100%" height={44} />
+          </View>
+
+          {/* Categoria skeleton */}
+          <View className="gap-1">
+            <SkeletonText width="100%" height={20} />
+            <SkeletonRect width="100%" height={44} />
+          </View>
+
+          {/* Quantidade skeleton */}
+          <View className="gap-1">
+            <SkeletonText width="100%" height={20} />
+            <SkeletonRect width="100%" height={44} />
+          </View>
+
+          {/* Local skeleton */}
+          <View className="gap-2">
+            <SkeletonText width="100%" height={20} />
+            <View className="flex-row gap-2">
+              <SkeletonText width={80} height={28} />
+              <SkeletonText width={80} height={28} />
+              <SkeletonText width={80} height={28} />
+            </View>
+          </View>
+
+          {/* Data skeleton */}
+          <View className="gap-1">
+            <SkeletonText width="100%" height={20} />
+            <SkeletonRect width="100%" height={44} />
+          </View>
+
+          {/* Salvar skeleton */}
+          <SkeletonRect width="100%" height={44} />
+        </ScrollView>
+      </KeyboardAvoidingView>
     );
   }
 
