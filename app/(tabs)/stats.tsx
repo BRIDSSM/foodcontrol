@@ -266,22 +266,22 @@ export default function StatsScreen() {
                 </View>
               </View>
             ) : null}
+
+            {/* Aproveitamento mensal - últimos 6 meses */}
+            {monthlyData ? (
+              <View className="gap-3 rounded-xl border border-border bg-card p-4">
+                <Text className="font-semibold">Aproveitamento mensal</Text>
+                <Text className="text-xs text-muted-foreground">Últimos 6 meses</Text>
+                <MonthlyChart
+                  data={monthlyData}
+                  color={palette.safe}
+                  gridColor={theme.border}
+                  labelColor={theme.mutedForeground}
+                />
+              </View>
+            ) : null}
           </>
         )}
-
-        {/* Aproveitamento mensal - últimos 6 meses */}
-        {monthlyData ? (
-          <View className="gap-3 rounded-xl border border-border bg-card p-4">
-            <Text className="font-semibold">Aproveitamento mensal</Text>
-            <Text className="text-xs text-muted-foreground">Últimos 6 meses</Text>
-            <MonthlyChart
-              data={monthlyData}
-              color={palette.safe}
-              gridColor={theme.border}
-              labelColor={theme.mutedForeground}
-            />
-          </View>
-        ) : null}
       </ScrollView>
     </SafeAreaView>
   );
