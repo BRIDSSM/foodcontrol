@@ -15,6 +15,12 @@ import { MetricCard } from '@/components/stats/metric-card';
 import { MonthlyChart } from '@/components/stats/monthly-chart';
 import { StatsEmptyState } from '@/components/stats/stats-empty-state';
 import { Separator } from '@/components/ui/separator';
+import {
+  SkeletonCategoryBar,
+  SkeletonMetricCard,
+  SkeletonRect,
+  SkeletonText,
+} from '@/components/ui/skeletons';
 import { Text } from '@/components/ui/text';
 import {
   PERIOD_LABELS,
@@ -63,8 +69,64 @@ export default function StatsScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-background" edges={['top']}>
-        <ActivityIndicator size="large" color={theme.primary} />
+      <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+        <ScrollView
+          contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 40, flexGrow: 1 }}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Header skeleton */}
+          <View className="gap-3 pt-2">
+            <SkeletonText width={160} height={28} />
+            <View className="flex-row gap-2">
+              <SkeletonText width={60} height={28} />
+              <SkeletonText width={60} height={28} />
+              <SkeletonText width={60} height={28} />
+              <SkeletonText width={60} height={28} />
+            </View>
+          </View>
+
+          {/* Taxa de aproveitamento skeleton */}
+          <View className="gap-3 rounded-xl border border-border bg-card p-4">
+            <View className="flex-row items-center justify-between">
+              <View className="gap-2">
+                <SkeletonText width={120} height={14} />
+                <SkeletonText width={80} height={36} />
+              </View>
+              <SkeletonText width={100} height={28} />
+            </View>
+            <SkeletonRect width="100%" height={12} className="rounded-full" />
+          </View>
+
+          {/* Consumidos / Descartados skeleton */}
+          <View className="flex-row gap-3">
+            <SkeletonMetricCard />
+            <SkeletonMetricCard />
+          </View>
+
+          {/* Desperdício evitado skeleton */}
+          <SkeletonMetricCard />
+
+          {/* Por categoria skeleton */}
+          <View className="gap-4 rounded-xl border border-border bg-card p-4">
+            <SkeletonText width={120} height={18} />
+            <View className="flex-row gap-4">
+              <SkeletonText width={80} height={14} />
+              <SkeletonText width={80} height={14} />
+            </View>
+            <View className="gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <SkeletonCategoryBar key={i} />
+              ))}
+            </View>
+          </View>
+
+          {/* Aproveitamento mensal skeleton */}
+          <View className="gap-3 rounded-xl border border-border bg-card p-4">
+            <SkeletonText width={140} height={18} />
+            <SkeletonText width={120} height={12} />
+            <SkeletonRect width="100%" height={160} className="rounded-lg" />
+          </View>
+        </ScrollView>
       </SafeAreaView>
     );
   }
