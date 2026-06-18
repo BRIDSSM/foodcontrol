@@ -2,10 +2,12 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
-import { Linking, View } from 'react-native';
+import { ActivityIndicator, Linking, View } from 'react-native';
 
 import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { getTheme } from '@/lib/theme';
 import { ResultCard } from '@/components/scanner/result-card';
 import { SCANNER_BG, SCANNER_TEXT, SCANNER_TEXT_MUTED } from '@/components/scanner/scanner-theme';
 import { ViewportOverlay } from '@/components/scanner/viewport-overlay';
@@ -18,8 +20,11 @@ import { SCAN_CONFIRMS_NEEDED, isValidGS1 } from '@/utils/barcode';
 const BARCODE_TYPES = ['ean13', 'ean8', 'upc_a', 'upc_e', 'itf14'] as const;
 
 export default function ScannerScreen() {
+  const colorScheme = useColorScheme() ?? 'light';
+  const theme = getTheme(colorScheme);
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState<ScannedBarcode | null>(null);
+  const [requestingPermission, setRequestingPermission] = useState(false);
 
   const pendingRef = useRef<{ data: string; count: number } | null>(null);
   const { state: lookupState, lookup, reset: resetLookup } = useProductLookup();
@@ -80,6 +85,17 @@ export default function ScannerScreen() {
 
   if (!permission.granted) {
     const canAsk = permission.canAskAgain;
+
+    async function handleRequestPermission() {
+      if (requestingPermission) return;
+      setRequestingPermission(true);
+      try {
+        await requestPermission();
+      } finally {
+        setRequestingPermission(false);
+      }
+    }
+
     return (
       <View
         className="flex-1 items-center justify-center gap-4 px-8"
@@ -96,9 +112,23 @@ export default function ScannerScreen() {
         <Button
           className="w-full"
           accessibilityLabel={canAsk ? 'Conceder permissão de câmera' : 'Abrir configurações'}
-          onPress={canAsk ? requestPermission : () => Linking.openSettings()}
+          onPress={canAsk ? handleRequestPermission : () => Linking.openSettings()}
+          disabled={requestingPermission}
         >
-          <Text>{canAsk ? 'Conceder permissão' : 'Abrir configurações'}</Text>
+          {requestingPermission ? (
+            <ActivityIndicator size="small" color={theme.primaryForeground} />
+          ) : (
+            <Text>{canAsk ? 'Conceder permissão' : 'Abrir configurações'}</Text>
+          )}
+        </Button>
+        <Button
+          variant="outline"
+          className="w-full"
+          accessibilityLabel="Voltar"
+          onPress={() => router.back()}
+          disabled={requestingPermission}
+        >
+          <Text style={{ color: SCANNER_TEXT }}>Voltar</Text>
         </Button>
       </View>
     );
