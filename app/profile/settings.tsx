@@ -40,6 +40,7 @@ export default function SettingsScreen() {
   const [alertHour, setAlertHour] = useState(DEFAULT_ALERT_HOUR);
   const [alertMinute, setAlertMinute] = useState(DEFAULT_ALERT_MINUTE);
   const [showTimePicker, setShowTimePicker] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const initialized = useRef(false);
   const initialAlertRef = useRef({ hour: DEFAULT_ALERT_HOUR, minute: DEFAULT_ALERT_MINUTE });
@@ -60,21 +61,27 @@ export default function SettingsScreen() {
   alertDate.setHours(alertHour, alertMinute, 0, 0);
 
   async function save() {
-    await saveAlertTime(alertHour, alertMinute);
-    initialAlertRef.current = { hour: alertHour, minute: alertMinute };
-    updateProfile(
-      { warning_days_before_expiry: warningDays, notifications_enabled: notificationsEnabled },
-      {
-        onSuccess: () => {
-          if (!user) return;
-          if (notificationsEnabled) {
-            rescheduleAllNotifications(user.id, warningDays).catch(() => {});
-          } else {
-            Notifications.cancelAllScheduledNotificationsAsync().catch(() => {});
-          }
+    setIsSaving(true);
+    try {
+      await saveAlertTime(alertHour, alertMinute);
+      initialAlertRef.current = { hour: alertHour, minute: alertMinute };
+      updateProfile(
+        { warning_days_before_expiry: warningDays, notifications_enabled: notificationsEnabled },
+        {
+          onSuccess: () => {
+            if (!user) return;
+            if (notificationsEnabled) {
+              rescheduleAllNotifications(user.id, warningDays).catch(() => {});
+            } else {
+              Notifications.cancelAllScheduledNotificationsAsync().catch(() => {});
+            }
+          },
+          onSettled: () => setIsSaving(false),
         },
-      },
-    );
+      );
+    } catch {
+      setIsSaving(false);
+    }
   }
 
   if (isLoading) {
@@ -277,9 +284,11 @@ export default function SettingsScreen() {
           className="w-full"
           accessibilityLabel="Salvar configurações"
           onPress={save}
-          disabled={!dirty || isPending}
+          disabled={!dirty || isSaving || isPending}
         >
-          <Text className="font-semibold">{isPending ? 'Salvando…' : 'Salvar configurações'}</Text>
+          <Text className="font-semibold">
+            {isSaving || isPending ? 'Salvando…' : 'Salvar configurações'}
+          </Text>
         </Button>
         {dirty && (
           <Text className="text-center text-xs text-muted-foreground">
