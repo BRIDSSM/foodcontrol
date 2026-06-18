@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -14,12 +15,16 @@ import { initials } from '@/lib/utils';
 export default function ProfileScreen() {
   const { user } = useAuth();
   const { data: profile } = useProfile();
+  const [signingOut, setSigningOut] = useState(false);
 
   const displayName = profile?.full_name ?? user?.user_metadata?.full_name ?? '';
   const email = user?.email ?? '';
 
   async function signOut() {
+    if (signingOut) return;
+    setSigningOut(true);
     await supabase.auth.signOut();
+    setSigningOut(false);
   }
 
   return (
@@ -47,7 +52,12 @@ export default function ProfileScreen() {
 
         {/* Sair */}
         <Card className="gap-0 py-0">
-          <MenuRow label="Sair" onPress={signOut} destructive />
+          <MenuRow
+            label={signingOut ? 'Saindo…' : 'Sair'}
+            onPress={signOut}
+            destructive
+            disabled={signingOut}
+          />
         </Card>
       </ScrollView>
     </SafeAreaView>
