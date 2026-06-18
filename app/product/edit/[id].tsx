@@ -621,9 +621,11 @@ export default function EditProductScreen() {
           className="w-full"
           accessibilityLabel="Salvar alterações"
           onPress={form.handleSubmit(onSubmit)}
-          disabled={isPending}
+          disabled={form.formState.isSubmitting || isPending}
         >
-          <Text>{isPending ? 'Salvando…' : 'Salvar alterações'}</Text>
+          <Text>
+            {form.formState.isSubmitting || isPending ? 'Salvando…' : 'Salvar alterações'}
+          </Text>
         </Button>
       </ScrollView>
     </KeyboardAvoidingView>

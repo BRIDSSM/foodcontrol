@@ -537,9 +537,9 @@ export default function AddProductScreen() {
           className="w-full"
           accessibilityLabel="Salvar produto"
           onPress={form.handleSubmit(onSubmit)}
-          disabled={isPending}
+          disabled={form.formState.isSubmitting || isPending}
         >
-          <Text>{isPending ? 'Salvando…' : 'Salvar produto'}</Text>
+          <Text>{form.formState.isSubmitting || isPending ? 'Salvando…' : 'Salvar produto'}</Text>
         </Button>
       </ScrollView>
     </KeyboardAvoidingView>
