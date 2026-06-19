@@ -35,7 +35,7 @@ Notifications.setNotificationHandler({
 const queryClient = new QueryClient();
 
 function AuthGuard() {
-  const { isSignedIn, isLoading } = useAuth();
+  const { isSignedIn, isLoading, isPasswordRecovery } = useAuth();
   const segments = useSegments();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
@@ -59,13 +59,20 @@ function AuthGuard() {
       return;
     }
 
+    if (isPasswordRecovery) {
+      if (segments[0] !== '(auth)' || segments[1] !== 'reset-password') {
+        router.replace('/(auth)/reset-password');
+      }
+      return;
+    }
+
     const inAuthGroup = segments[0] === '(auth)';
     if (!isSignedIn && !inAuthGroup && segments[0] !== 'onboarding') {
       router.replace('/(auth)/login');
     } else if (isSignedIn && inAuthGroup) {
       router.replace('/(tabs)');
     }
-  }, [isSignedIn, isLoading, segments, mounted, hasSeenOnboarding]);
+  }, [isSignedIn, isLoading, segments, mounted, hasSeenOnboarding, isPasswordRecovery]);
 
   useEffect(() => {
     if (!isSignedIn) return;

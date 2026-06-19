@@ -1,3 +1,4 @@
+import * as Linking from 'expo-linking';
 import { Link, router } from 'expo-router';
 import {
   ArrowLeft,
@@ -6,6 +7,7 @@ import {
   Lock,
   Mail,
   MailCheck,
+  RefreshCw,
   TriangleAlert,
   User,
   UserPlus,
@@ -32,6 +34,8 @@ export default function RegisterScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendSent, setResendSent] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
@@ -53,7 +57,10 @@ export default function RegisterScreen() {
     const { data, error: authError } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: fullName } },
+      options: {
+        data: { full_name: fullName },
+        emailRedirectTo: Linking.createURL('confirm-email'),
+      },
     });
     setLoading(false);
 
@@ -67,6 +74,18 @@ export default function RegisterScreen() {
       setAwaitingConfirmation(true);
     }
     // Se session != null, onAuthStateChange cuida do redirect automaticamente
+  }
+
+  async function handleResend() {
+    setResendSent(false);
+    setResendLoading(true);
+    await supabase.auth.resend({
+      type: 'signup',
+      email,
+      options: { emailRedirectTo: Linking.createURL('confirm-email') },
+    });
+    setResendLoading(false);
+    setResendSent(true);
   }
 
   if (awaitingConfirmation) {
@@ -107,6 +126,22 @@ export default function RegisterScreen() {
                     <Text className="font-semibold">Ir para o login</Text>
                   </Button>
                 </Link>
+                <Button
+                  variant="outline"
+                  className="w-full flex-row gap-2"
+                  accessibilityLabel="Reenviar e-mail de confirmação"
+                  onPress={handleResend}
+                  disabled={resendLoading || resendSent}
+                >
+                  <RefreshCw size={16} color={theme.mutedForeground} />
+                  <Text>
+                    {resendLoading
+                      ? 'Reenviando…'
+                      : resendSent
+                        ? 'E-mail reenviado!'
+                        : 'Reenviar e-mail'}
+                  </Text>
+                </Button>
                 <Pressable
                   onPress={() => setAwaitingConfirmation(false)}
                   accessibilityLabel="Voltar ao cadastro"

@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import * as Linking from 'expo-linking';
 import { ArrowLeft, CheckCircle, KeyRound, Mail, TriangleAlert } from 'lucide-react-native';
 import { useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
@@ -27,7 +28,9 @@ export default function ForgotPasswordScreen() {
       return;
     }
     setLoading(true);
-    const { error: authError } = await supabase.auth.resetPasswordForEmail(email.trim());
+    const { error: authError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: Linking.createURL('reset-password'),
+    });
     setLoading(false);
     if (authError) {
       setError(translateAuthError(authError.message));
